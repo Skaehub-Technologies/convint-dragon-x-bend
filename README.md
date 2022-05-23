@@ -1,4 +1,4 @@
-CONVINT 
+SPEAKSFER 
 =======
 
 ## Vision
@@ -18,9 +18,9 @@ The preferred JSON object to be returned by the API should be structured as foll
 ```source-json
 {
   "user": {
-    "email": "convint@convint.com",
+    "email": "speaksfer@speaksfer.com",
     "token": "jwt.token.here",
-    "username": "convint",
+    "username": "speaksfer",
     "bio": "Software Engineer at work!",
     "image": null
   }
@@ -30,7 +30,7 @@ The preferred JSON object to be returned by the API should be structured as foll
 ```source-json
 {
   "profile": {
-    "username": "convint",
+    "username": "speaksfer",
     "bio": "Software Engineer at work!",
     "image": "image-link",
     "following": false
@@ -51,7 +51,7 @@ The preferred JSON object to be returned by the API should be structured as foll
     "favorited": false,
     "favoritesCount": 0,
     "author": {
-      "username": "convint",
+      "username": "speaksfer",
       "bio": "Software Engineer at work!",
       "image": "https://....",
       "following": false
@@ -73,7 +73,7 @@ The preferred JSON object to be returned by the API should be structured as foll
     "favorited": false,
     "favoritesCount": 0,
     "author": {
-      "username": "convint",
+      "username": "speaksfer",
       "bio": "Software Engineer at work!",
       "image": "https://....",
       "following": false
@@ -90,7 +90,7 @@ The preferred JSON object to be returned by the API should be structured as foll
     "favorited": false,
     "favoritesCount": 0,
     "author": {
-      "username": "convint",
+      "username": "speaksfer",
       "bio": "Software Engineer at work!",
       "image": "https://....",
       "following": false
@@ -108,7 +108,7 @@ The preferred JSON object to be returned by the API should be structured as foll
     "updatedAt": "2016-02-18T03:22:56.637Z",
     "body": "It takes a Jacobian",
     "author": {
-      "username": "convint",
+      "username": "speaksfer",
       "bio": "I work at statefarm",
       "image": "https://i.stack.imgur.com/xHWG8.jpg",
       "following": false
@@ -125,7 +125,7 @@ The preferred JSON object to be returned by the API should be structured as foll
     "updatedAt": "2016-02-18T03:22:56.637Z",
     "body": "It takes a Jacobian",
     "author": {
-      "username": "convint",
+      "username": "speaksfer",
       "bio": "Software Engineer at work!",
       "image": "https://i.stack.imgur.com/xHWG8.jpg",
       "following": false
@@ -175,8 +175,8 @@ Example request body:
 ```source-json
 {
   "user":{
-    "email": "convint@convint.com",
-    "password": "convint@123"
+    "email": "speaksfer@speaksfer.com",
+    "password": "speaksfer@123"
   }
 }
 ```
@@ -194,9 +194,9 @@ Example request body:
 ```source-json
 {
   "user":{
-    "username": "Convint",
-    "email": "convint@convint.com",
-    "password": "convint@123"
+    "username": "Speaksfer",
+    "email": "speaksfer@speaksfer.com",
+    "password": "speaksfer@123"
   }
 }
 ```
@@ -220,7 +220,7 @@ Example request body:
 ```source-json
 {
   "user":{
-    "email": "convint@convint.com",
+    "email": "speaksfer@speaksfer.com",
     "bio": "Software Engineer at work!",
     "image": "https://...."
   }
@@ -267,11 +267,11 @@ Filter by tag:
 
 Filter by author:
 
-`?author=convint`
+`?author=speaksfer`
 
 Favorited by user:
 
-`?favorited=convint`
+`?favorited=speaksfer`
 
 Limit number of articles (default is 20):
 
