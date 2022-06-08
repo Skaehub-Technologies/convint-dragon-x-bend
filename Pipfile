@@ -9,13 +9,16 @@ Django = "4.0.5"
 python-decouple = "3.6"
 dj-database-url = "0.5.0"
 
+
 [dev-packages]
 seed-isort-config = "2.2.0"
 flake8 = "4.0.1"
+pre-commit = "2.19.0"
 black = "22.3.0"
 isort = "5.10.1"
 mypy = "0.950"
 pytest = "7.1.2"
 django-stubs = "1.11.0"
+
 [requires]
 python_version = "3.8"
