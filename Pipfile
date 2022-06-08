@@ -8,7 +8,7 @@ dj-database-url = "==0.5.0"
 psycopg2-binary = "==2.9.3"
 python-decouple = "==3.6"
 Django = "==4.0.5"
-mypy = "==0.961"
+
 
 [dev-packages]
 pre-commit = "==2.19.0"
@@ -17,6 +17,7 @@ black = "==22.3.0"
 isort = "==5.10.1"
 pytest = "==7.1.2"
 django-stubs = "==1.11.0"
+mypy = "==0.961"
 
 [requires]
 python_version = "3.8"
