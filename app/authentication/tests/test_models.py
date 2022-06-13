@@ -75,20 +75,3 @@ class UserModelTest(TestCase):
 
         self.assertIsNot(user.is_verified, False)
         self.assertTrue(user.is_verified)
-
-
-
-
-
-
-
-    # def test_is_active(self):
-    #     with mock.patch('django.utils.timezone.now') as mock_now:
-    #         mock_now.return_value = dateparse.parse_datetime("2022-06-13T09:00z")
-    #         user = User.objects.create(
-    #             username = 'tembo',
-    #             email = 'tembo@gmail.com',
-    #             is_active = True
-    #         )
-
-    #     self.assertTrue(user.is_active)
