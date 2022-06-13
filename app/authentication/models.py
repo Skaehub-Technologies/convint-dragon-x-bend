@@ -1,15 +1,22 @@
-from datetime import timezone
+from typing import Any, Literal
+
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.utils.translation import gettext_lazy as _
 
 from app.abstracts import TimeStampedModel
 
 
-
 class UserManager(BaseUserManager):
-    use_in_migrations: True
-    def _create_user(self, username, email, password, **kwargs):
+    use_in_migrations: Literal[True]
+
+    def _create_user(
+        self, username: str, email: str, password: str, **kwargs: Any
+    ) -> Any:
         """
         Create and save a user with the given username, email, and password.
         """
@@ -23,15 +30,21 @@ class UserManager(BaseUserManager):
         user.save()
         return user
 
-    def create_user(self, username, email=None, password=None, **kwargs):
+    def create_user(
+        self, username: str, email: str, password: str, **kwargs: Any
+    ) -> Any:
         kwargs.setdefault("is_staff", False)
         kwargs.setdefault("is_superuser", False)
         return self._create_user(username, email, password, **kwargs)
 
-    def create_superuser(self, username, email=None, password=None, **kwargs):
+    def create_superuser(
+        self, username: str, email: str, password: str, **kwargs: Any
+    ) -> Any:
         kwargs.setdefault("is_staff", True)
         kwargs.setdefault("is_superuser", True)
 
+        if not password:
+            raise ValueError("Password is required")
         if kwargs.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff=True.")
         if kwargs.get("is_superuser") is not True:
@@ -40,16 +53,34 @@ class UserManager(BaseUserManager):
         return self._create_user(username, email, password, **kwargs)
 
 
-
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
-    username = models.CharField(_("username"), max_length=150, help_text=_("Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."))
-    email = models.EmailField(unique=True,)
-    is_active = models.BooleanField(_("active"), default=False, help_text=_(
+    username = models.CharField(
+        _("username"),
+        max_length=150,
+        help_text=_(
+            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+        ),
+    )
+    email = models.EmailField(
+        unique=True,
+    )
+    is_active = models.BooleanField(
+        _("active"),
+        default=False,
+        help_text=_(
             "Designates whether this user should be treated as active. "
-            "Unselect this instead of deleting accounts."),)
-    is_staff = models.BooleanField(_("staff status"), default=False, help_text=_("Designates whether the user can log into this admin site."))
+            "Unselect this instead of deleting accounts."
+        ),
+    )
+    is_staff = models.BooleanField(
+        _("staff status"),
+        default=False,
+        help_text=_(
+            "Designates whether the user can log into this admin site."
+        ),
+    )
     is_verified = models.BooleanField(default=False)
 
     objects = UserManager()
-    REQUIRED_FIELDS = ['username','password' ]
-    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ["username", "password"]
+    USERNAME_FIELD = "email"

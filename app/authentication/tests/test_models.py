@@ -1,77 +1,97 @@
-from datetime import datetime
+from django.contrib.auth import get_user_model
 from django.test import TestCase
-from unittest import mock
-from django.utils import dateparse
 
-from app.authentication.models import User
+User = get_user_model()
 
 
 class UserModelTest(TestCase):
-    def test_values(self):
-        '''This function creates a test case user with all values'''
-        with mock.patch('django.utils.timezone.now') as mock_now:
-            mock_now.return_value = dateparse.parse_datetime("2022-06-11T10:30:00Z")
-            user = User.objects.create(
-                username = 'tembo',
-                email = 'tembo@gmail.com',
-            )
+    """Testing models"""
 
-        self.assertEqual(user.email, 'tembo@gmail.com')
-        self.assertIsNot(user.username, 'tembo1')
-        self.assertEqual(user.is_active, False)
+    # Testing user
+    def test_create_user(self) -> None:
+        user = User.objects.create_user(
+            username="ndovu",
+            email="ndovu@test.com",
+        )
+
+        self.assertEqual(user.email, "ndovu@test.com")
+        self.assertEqual(user.username, "ndovu")
+        self.assertFalse(user.is_active)
         self.assertFalse(user.is_staff)
         self.assertFalse(user.is_verified)
 
-
-    def test_errors(self):
-        '''This function tests the errors'''
-        with mock.patch('django.utils.timezone.now') as mock_now:
-            mock_now.return_value = dateparse.parse_datetime("2022-06-11T10:30:00Z")
-            user = User.objects.create(
-                username = 'tembo',
-                email = 'tembo@gmail.com',
-            )
-        self.assertRaises(ValueError)
-
-
-    def test_is_active(self):
-        '''Tests if user is active'''
-        with mock.patch('django.utils.timezone.now') as mock_now:
-            mock_now.return_value = dateparse.parse_datetime("2022-06-11T10:30:00Z")
-            user = User.objects.create(
-                username = 'tembo',
-                email = 'tembo@gmail.com',
-                is_active = True
+    def test_user_username_errors(self) -> None:
+        with self.assertRaises(ValueError):
+            User.objects.create_user(
+                username="",
+                email="tembo@gmail.com",
             )
 
-        self.assertEqual(user.email, 'tembo@gmail.com')
-        self.assertIsNot(user.username, 'tembo1')
+    def test_user_email_errors(self) -> None:
+        with self.assertRaises(ValueError):
+            User.objects.create_user(username="tembo", email="")
+
+    def test_user_is_active(self) -> None:
+        user = User.objects.create_user(
+            username="tembo", email="tembo@gmail.com", is_active=True
+        )
+
+        self.assertEqual(user.email, "tembo@gmail.com")
+        self.assertIsNot(user.username, "tembo1")
         self.assertEqual(user.is_active, True)
 
-
-    def test_is_staff(self):
-        '''Tests if the user is staff'''
-        with mock.patch('django.utils.timezone.now') as mock_now:
-            mock_now.return_value = dateparse.parse_datetime("2022-06-11T10:30:00Z")
-            user = User.objects.create(
-                username = 'tembo',
-                email = 'tembo@gmail.com',
-                is_staff = True
-            )
+    def test_user_is_staff(self) -> None:
+        user = User.objects.create_user(
+            username="tembo", email="tembo@gmail.com", is_staff=True
+        )
 
         self.assertEqual(user.is_staff, True)
         self.assertTrue(user.is_staff)
 
-
-    def test_is_verified(self):
-        '''Tests if user is verified'''
-        with mock.patch('django.utils.timezone.now') as mock_now:
-            mock_now.return_value = dateparse.parse_datetime("2022-06-11T10:30:00Z")
-            user = User.objects.create(
-                username = 'tembo',
-                email = 'tembo@gmail.com',
-                is_verified = True
-            )
+    def test_user_is_verified(self) -> None:
+        user = User.objects.create_user(
+            username="tembo", email="tembo@gmail.com", is_verified=True
+        )
 
         self.assertIsNot(user.is_verified, False)
         self.assertTrue(user.is_verified)
+
+    # Testing superuser model
+    def test_create_superuser(self) -> None:
+        user = User.objects.create_superuser(
+            username="tembo",
+            email="testsuperuser@test.com",
+            password="helloworld",
+        )
+
+        self.assertIsInstance(user, User)
+        self.assertEqual(user.email, "testsuperuser@test.com")
+        self.assertEqual(user.username, "tembo")
+        self.assertFalse(user.is_active)
+        self.assertTrue(user.is_staff)
+        self.assertFalse(user.is_verified)
+
+    def test_superuser_password_error(self) -> None:
+        with self.assertRaises(ValueError):
+            User.objects.create_superuser(
+                username="tembo", email="testsuperuser@test.com", password=""
+            )
+
+    def test_superuser_staff_error(self) -> None:
+        with self.assertRaises(ValueError):
+            User.objects.create_superuser(
+                username="tembo",
+                email="testsuperuser@test.com",
+                password="hello",
+                is_staff=False,
+            )
+
+    def test_superuser_error(self) -> None:
+        with self.assertRaises(ValueError):
+            User.objects.create_superuser(
+                username="tembo",
+                email="testsuperuser@test.com",
+                password="hello",
+                is_staff=True,
+                is_superuser=False,
+            )
