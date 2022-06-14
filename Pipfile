@@ -17,6 +17,8 @@ isort = "==5.10.1"
 pytest = "==7.1.2"
 django-stubs = "==1.11.0"
 mypy = "==0.950"
+pytest-django = "==4.5.2"
+pytest-cov = "==3.0.0"
 
 [requires]
 python_version = "3.8"
