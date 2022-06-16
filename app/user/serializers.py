@@ -1,6 +1,9 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from rest_framework_simplejwt.serializers import (
+    TokenObtainPairSerializer,
+)
 
 User = get_user_model()
 Profile = get_user_model()
@@ -15,7 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     email = serializers.EmailField(
         required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())]
+        validators=[UniqueValidator(queryset=User.objects.all())],
     )
 
     password = serializers.CharField(
@@ -39,7 +42,12 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-
+class UserTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token["userID"] = user.id
+        return token
 
 
 class ProfileSerializer(serializers.ModelSerializer):
