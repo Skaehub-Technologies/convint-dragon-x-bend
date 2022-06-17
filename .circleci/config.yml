@@ -1,0 +1,37 @@
+version: 2.1
+orbs: 
+  codecov: codecov/codecov@3.2.3
+jobs:
+  test-and-lint:
+    docker:
+      - image: circleci/python:3.10.1
+      - image: circleci/postgres
+        environment:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+    steps:
+      - checkout
+      - run:
+          name: install dependencies
+          command: |
+            sudo -H pip install -U pipenv
+            pipenv requirements --dev > requirements.txt
+            pip install -r requirements.txt
+      - run:
+          name: lint
+          command: |
+            black .
+            isort .
+            flake8 .
+            mypy .
+      - run:
+          name: run tests
+          command: pytest --cov
+
+workflows:
+  lint-and-test-workflow:
+    jobs:
+      - test-and-lint:
+          post-steps:
+            - codecov/upload
