@@ -4,8 +4,8 @@ orbs:
 jobs:
   test-and-lint:
     docker:
-      - image: apline/python:3.10.1
-      - image: apline/postgres
+      - image: cimg/python:3.10
+      - image: cimg/postgres
         environment:
           POSTGRES_USER: testuser
           POSTGRES_PASSWORD: testpass
