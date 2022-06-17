@@ -5,7 +5,7 @@ jobs:
   test-and-lint:
     docker:
       - image: cimg/python:3.10
-      - image: cimg/postgres
+      - image: circleci/postgres
         environment:
           POSTGRES_USER: testuser
           POSTGRES_PASSWORD: testpass
