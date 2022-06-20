@@ -4,6 +4,10 @@ from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer,
 )
+from speaksfer.settings.base import EMAIL_USER
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+
 
 User = get_user_model()
 Profile = get_user_model()
@@ -37,8 +41,23 @@ class UserSerializer(serializers.ModelSerializer):
     #         raise serializers.ValidationError("Passwords do not match")
     #     return data
 
+    @staticmethod
+    def send_email(user):
+        email_body = render_to_string(
+            "email_verification.html", {"user": user}
+        )
+        send_mail(
+            "Verify  your email!",
+            email_body,
+            EMAIL_USER,
+            [user.email],
+            fail_silently=False,
+        )
+
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
+        self.send_email(user)
+    
         return user
 
 
