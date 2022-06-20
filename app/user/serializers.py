@@ -1,9 +1,10 @@
+from typing import Any
+
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from speaksfer.settings.base import EMAIL_USER
 
@@ -40,7 +41,7 @@ class UserSerializer(serializers.ModelSerializer):
     #     return data
 
     @staticmethod
-    def send_email(user):
+    def send_email(user: Any) -> None:
         email_body = render_to_string(
             "email_verification.html", {"user": user}
         )
@@ -52,19 +53,11 @@ class UserSerializer(serializers.ModelSerializer):
             fail_silently=False,
         )
 
-    def create(self, validated_data):
+    def create(self, validated_data: Any) -> Any:
         user = User.objects.create_user(**validated_data)
         self.send_email(user)
 
         return user
-
-
-class UserTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token["userID"] = user.id
-        return token
 
 
 class ProfileSerializer(serializers.ModelSerializer):

@@ -1,15 +1,14 @@
 from rest_framework import status
-from rest_framework.authtoken.models import Token
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView
 
-from app.user.serializers import UserSerializer, UserTokenObtainPairSerializer
+from app.user.serializers import UserSerializer
 
 
 class UserRegister(APIView):
-    def post(self, request, format="json"):
+    def post(self, request: Request, format: str = "json") -> Response:
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -19,7 +18,3 @@ class UserRegister(APIView):
         response["access"] = str(refresh.access_token)
 
         return Response(response, status=status.HTTP_201_CREATED)
-
-
-class UserTokenObtainPairView(TokenObtainPairView):
-    serializer_class = UserTokenObtainPairSerializer

@@ -92,5 +92,5 @@ class Profile(models.Model):
     image = models.URLField(blank=True)
     bio = models.TextField(blank=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.user.username
