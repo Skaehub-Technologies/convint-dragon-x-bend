@@ -5,7 +5,7 @@ orbs:
 jobs:
   build_and_test: # this can be any name you choose
     docker:
-      - image: cimg/python:3.10.1
+      - image: cimg/base:2021.04
         environment:
           DATABASE_URL: postgresql://root@localhost/circle_test?sslmode=disable
       - image: circleci/postgres:9.6.2
