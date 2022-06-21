@@ -42,6 +42,7 @@ class UserManager(BaseUserManager):
     ) -> Any:
         kwargs.setdefault("is_staff", True)
         kwargs.setdefault("is_superuser", True)
+        kwargs.setdefault("is_active", True)
 
         if not password:
             raise ValueError("Password is required")
@@ -66,7 +67,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     )
     is_active = models.BooleanField(
         _("active"),
-        default=False,
+        default=True,
         help_text=_(
             "Designates whether this user should be treated as active. "
             "Unselect this instead of deleting accounts."
@@ -84,3 +85,12 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     objects = UserManager()
     REQUIRED_FIELDS = ["username", "password"]
     USERNAME_FIELD = "email"
+
+
+class Profile(models.Model):
+    user = models.OneToOneField("user.User", on_delete=models.CASCADE)
+    image = models.URLField(blank=True)
+    bio = models.TextField(blank=True)
+
+    def __str__(self) -> str:
+        return self.user.username
