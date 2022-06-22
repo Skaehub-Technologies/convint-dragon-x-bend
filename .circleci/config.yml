@@ -1,17 +1,22 @@
 version: 2.1
 orbs:
-  python: circleci/python@1.5.0
+  python: circleci/python@2.0.3
+
+executors:
+  my_executor:
+      docker:
+        - image: cimg/python:3.10
+        - image: cimg/base:2021.04
+          environment:
+            DATABASE_URL: postgresql://root@localhost/circle_test?sslmode=disable
+        - image: circleci/postgres:9.6.2
+          environment:
+            POSTGRES_USER: chris
+            POSTGRES_DB: circle_test
+
 jobs:
   build_and_test:
-    docker:
-      - image: cimg/base:2021.04
-        environment:
-          DATABASE_URL: postgresql://root@localhost/circle_test?sslmode=disable
-      - image: circleci/postgres:9.6.2
-        environment:
-          POSTGRES_USER: chris
-          POSTGRES_DB: circle_test
-  executor: python/default
+    executor: my_executor
     steps:
       - checkout
       - python/install-packages:
