@@ -34,17 +34,9 @@ commands:
                 command: git diff
                 name: git diff
                 when: on_fail
-    description: 
-        - image: cimg/python:3.10
-          environment:
-            SECRET_KEY: circlecisecretkey
-            DATABASE_URL: postgresql://circle:password@localhost/circle_test?sslmode=disable
-            ENV_NAME: local
-        - image: circleci/postgres:latest
-          environment:
-            POSTGRES_USER: circle
-            POSTGRES_PASSWORD: password
-            POSTGRES_DB: circle_test
+        description: |
+            Tools for running lint commands
+            [DEPRECATED] use talkiq/linter instead!
 jobs:
     pre-commit:
         description: |
@@ -58,7 +50,7 @@ jobs:
                     Optional alternate config file.
                 type: string
             python_version:
-                default: 3.10.5
+                default: 3.10
                 description: |
                     The python version used to run pre-commit.
                 type: string
@@ -70,18 +62,34 @@ jobs:
             - pre-commit:
                 cache_prefix: <<parameters.python_version>>
                 config_file: <<parameters.config_file>>
-  build_and_test:
-    executor: my_executor
-    steps:
-      - checkout
-      - python/install-packages:
-          args: --dev
-          pkg-manager: pipenv
-      - run:
-          command: |
-            pipenv run pytest
-          name: Test 
+
+    build_and_test:
+        executor: my_executor
+        steps:
+            - checkout
+            - python/install-packages:
+                args: --dev
+                pkg-manager: pipenv
+            - run:
+                command: |
+                    pipenv run pytest
+                name: Test it
+
+executors:
+  my_executor:
+      docker:
+        - image: cimg/python:3.10
+          environment:
+            SECRET_KEY: circlecisecretkey
+            DATABASE_URL: postgresql://circle:password@localhost/circle_test?sslmode=disable
+            ENV_NAME: local
+        - image: circleci/postgres:latest
+          environment:
+            POSTGRES_USER: circle
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: circle_test
 workflows:
   main:
     jobs:
+      - pre-commit
       - build_and_test
