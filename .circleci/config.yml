@@ -3,37 +3,37 @@ orbs:
   python: circleci/python@2.0.3
   linter: circleci/linter@2.0.0
 
-commands:
-    pre-commit:
-        description: |
-            Runs pre-commit hooks against the current repo. Must be run in an executor with git, python, pip.
-        parameters:
-            cache_prefix:
-                default: ""
-                description: |
-                    Optional cache prefix to be used on CircleCI. Can be used for cache busting or to ensure multiple jobs use different caches.
-                type: string
-            config_file:
-                default: .pre-commit-config.yaml
-                description: |
-                    Optional alternate config file.
-                type: string
-        steps:
-            - run: python -m pip install --progress-bar=off pre-commit
-            - checkout
-            - restore_cache:
-                keys:
-                    - cache-pre-commit-<<parameters.cache_prefix>>-{{ checksum "<<parameters.config_file>>" }}
-            - run: pre-commit install-hooks -c <<parameters.config_file>>
-            - save_cache:
-                key: cache-pre-commit-<<parameters.cache_prefix>>-{{ checksum "<<parameters.config_file>>" }}
-                paths:
-                    - ~/.cache/pre-commit
-            - run: pre-commit run --all-files -c <<parameters.config_file>>
-            - run:
-                command: git diff
-                name: git diff
-                when: on_fail       
+# commands:
+#     pre-commit:
+#         description: |
+#             Runs pre-commit hooks against the current repo. Must be run in an executor with git, python, pip.
+#         parameters:
+#             cache_prefix:
+#                 default: ""
+#                 description: |
+#                     Optional cache prefix to be used on CircleCI. Can be used for cache busting or to ensure multiple jobs use different caches.
+#                 type: string
+#             config_file:
+#                 default: .pre-commit-config.yaml
+#                 description: |
+#                     Optional alternate config file.
+#                 type: string
+#         steps:
+#             - run: python -m pip install --progress-bar=off pre-commit
+#             - checkout
+#             - restore_cache:
+#                 keys:
+#                     - cache-pre-commit-<<parameters.cache_prefix>>-{{ checksum "<<parameters.config_file>>" }}
+#             - run: pre-commit install-hooks -c <<parameters.config_file>>
+#             - save_cache:
+#                 key: cache-pre-commit-<<parameters.cache_prefix>>-{{ checksum "<<parameters.config_file>>" }}
+#                 paths:
+#                     - ~/.cache/pre-commit
+#             - run: pre-commit run --all-files -c <<parameters.config_file>>
+#             - run:
+#                 command: git diff
+#                 name: git diff
+#                 when: on_fail       
 jobs:
     pre-commit:
         description: |
