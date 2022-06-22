@@ -1,7 +1,7 @@
 version: 2.1
 orbs:
   python: circleci/python@2.0.3
-  linter: Skaehub/linter@2.0.0
+  linter: circleci/linter@2.0.0
 
 commands:
     pre-commit:
