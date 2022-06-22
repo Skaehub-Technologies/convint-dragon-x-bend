@@ -6,6 +6,8 @@ executors:
   my_executor:
       docker:
         - image: cimg/python:3.10
+          environment: 
+            SECRET_KEY: circlecisecretkey
         - image: cimg/base:2021.04
           environment:
             DATABASE_URL: postgresql://root@localhost/circle_test?sslmode=disable
