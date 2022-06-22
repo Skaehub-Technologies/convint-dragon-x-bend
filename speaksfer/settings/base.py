@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "rest_framework.authtoken",
+    "django_rest_passwordreset",
 ]
 
 AUTH_USER_MODEL = "user.User"
@@ -149,3 +150,4 @@ EMAIL_HOST_PASSWORD = config("SENDGRID_API_KEY", "")
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USER = config("EMAIL_USER", "")
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

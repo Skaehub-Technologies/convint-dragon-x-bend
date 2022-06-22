@@ -33,12 +33,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ("email", "username", "password")
 
-    # def validate(self, data):
-
-    #     if data['password'] != data['confirm_password']:
-    #         raise serializers.ValidationError("Passwords do not match")
-    #     return data
-
     @staticmethod
     def send_email(user: Any) -> None:
         email_body = render_to_string(
@@ -68,3 +62,4 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ("username", "bio", "image")
         read_only_fields = "username"
+
