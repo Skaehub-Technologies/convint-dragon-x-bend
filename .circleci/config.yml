@@ -88,5 +88,5 @@ executors:
 workflows:
   main:
     jobs:
-        - pre-commit
+        - pre-commit,
         - build_and_test
