@@ -8,11 +8,12 @@ executors:
         - image: cimg/python:3.10
           environment:
             SECRET_KEY: circlecisecretkey
-            DATABASE_URL: postgresql://root@localhost/circle_test?sslmode=disable
+            DATABASE_URL: postgresql://circle:password@localhost/circle_test?sslmode=disable
             ENV_NAME: local
         - image: circleci/postgres:latest
           environment:
             POSTGRES_USER: circle
+            POSTGRES_PASSWORD: password
             POSTGRES_DB: circle_test
 
 jobs:
