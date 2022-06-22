@@ -33,10 +33,7 @@ commands:
             - run:
                 command: git diff
                 name: git diff
-                when: on_fail
-        description: |
-            Tools for running lint commands
-            [DEPRECATED] use talkiq/linter instead!
+                when: on_fail       
 jobs:
     pre-commit:
         description: |
