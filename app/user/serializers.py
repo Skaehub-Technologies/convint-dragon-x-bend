@@ -6,10 +6,10 @@ from django.template.loader import render_to_string
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
+from app.user.models import Profile
 from speaksfer.settings.base import EMAIL_USER
 
 User = get_user_model()
-Profile = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -32,7 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("email", "username", "password")
+        fields = ("id", "email", "username", "password")
 
     # def validate(self, data):
 
@@ -55,6 +55,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data: Any) -> Any:
         user = User.objects.create_user(**validated_data)
+        profile_instance = Profile.objects.create(user=user)  # noqa F841
         self.send_email(user)
 
         return user
@@ -63,9 +64,15 @@ class UserSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username")
     bio = serializers.CharField(allow_blank=True, required=False)
-    image = serializers.SerializerMethodField()
+    # image = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
-        fields = ("username", "bio", "image")
-        read_only_fields = "username"
+        fields = ("username", "bio")
+        read_only_fields = ["username"]
+
+    # def create(self, validated_data):
+    #     user_data = validated_data.pop('user')
+    #     user_instance = User.objects.create(**user_data)
+    #     profile_instance = Profile.objects.create(user=user_instance, **validated_data)
+    #     return profile_instance
