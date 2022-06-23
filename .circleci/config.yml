@@ -30,7 +30,7 @@ jobs:
                 name: Test it
                 command: |
                     pipenv run pytest
-                
+
 
     pre-commit:
       executor: lint_executor
@@ -39,7 +39,7 @@ jobs:
         - python/install-packages:
             args: --dev
             pkg-manager: pipenv
-        - run: 
+        - run:
             name: Run linters and formatters
             command: pipenv run pre-commit run --all-files
 
