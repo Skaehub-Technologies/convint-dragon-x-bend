@@ -33,7 +33,7 @@ jobs:
       - run:
           name: Test it
           command: |
-            pipenv run pytest --cov
+            pipenv run pytest --cov-report xml:coverage.xml
       - persist_to_workspace:
           root: ~/project
           paths:
