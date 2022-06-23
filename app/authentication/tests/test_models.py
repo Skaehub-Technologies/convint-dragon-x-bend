@@ -10,9 +10,7 @@ class UserModelTest(TestCase):
     # Testing user
     def test_create_user(self) -> None:
         user = User.objects.create_user(
-            username="ndovu",
-            email="ndovu@test.com",
-            password="wild"
+            username="ndovu", email="ndovu@test.com", password="wild"
         )
 
         self.assertEqual(user.email, "ndovu@test.com")
@@ -24,18 +22,21 @@ class UserModelTest(TestCase):
     def test_user_username_errors(self) -> None:
         with self.assertRaises(ValueError):
             User.objects.create_user(
-                username="",
-                email="tembo@gmail.com",
-                password = "nice"
+                username="", email="tembo@gmail.com", password="nice"
             )
 
     def test_user_email_errors(self) -> None:
         with self.assertRaises(ValueError):
-            User.objects.create_user(username="tembo", email="", password="wild")
+            User.objects.create_user(
+                username="tembo", email="", password="wild"
+            )
 
     def test_user_is_active(self) -> None:
         user = User.objects.create_user(
-            username="tembo", email="tembo@gmail.com", is_active=True, password="wild"
+            username="tembo",
+            email="tembo@gmail.com",
+            is_active=True,
+            password="wild",
         )
 
         self.assertEqual(user.email, "tembo@gmail.com")
@@ -44,7 +45,10 @@ class UserModelTest(TestCase):
 
     def test_user_is_staff(self) -> None:
         user = User.objects.create_user(
-            username="tembo", email="tembo@gmail.com", password="wild", is_staff=True
+            username="tembo",
+            email="tembo@gmail.com",
+            password="wild",
+            is_staff=True,
         )
 
         self.assertEqual(user.is_staff, True)
@@ -52,7 +56,10 @@ class UserModelTest(TestCase):
 
     def test_user_is_verified(self) -> None:
         user = User.objects.create_user(
-            username="tembo", email="tembo@gmail.com", password="wild", is_verified=True
+            username="tembo",
+            email="tembo@gmail.com",
+            password="wild",
+            is_verified=True,
         )
 
         self.assertIsNot(user.is_verified, False)
