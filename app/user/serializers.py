@@ -6,7 +6,7 @@ from django.template.loader import render_to_string
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from app.user.models import Profile
+from app.user.models import Profile, UserFollowing
 from speaksfer.settings.base import EMAIL_USER
 
 User = get_user_model()
@@ -30,9 +30,13 @@ class UserSerializer(serializers.ModelSerializer):
         write_only=True,
     )
 
+    following = serializers.SerializerMethodField()
+    followers = serializers.SerializerMethodField()
+    
     class Meta:
         model = User
-        fields = ("id", "email", "username", "password")
+        fields = ("id", "email", "username", "password", "following",
+            "followers",)
 
     # def validate(self, data):
 
@@ -60,6 +64,11 @@ class UserSerializer(serializers.ModelSerializer):
 
         return user
 
+    def get_following(self, obj):
+        return UserFollowingSerializer(obj.following.all(), many=True).data
+
+    def get_followers(self, obj):
+        return FollowersSerializer(obj.followers.all(), many=True).data
 
 class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username")
@@ -76,3 +85,15 @@ class ProfileSerializer(serializers.ModelSerializer):
     #     user_instance = User.objects.create(**user_data)
     #     profile_instance = Profile.objects.create(user=user_instance, **validated_data)
     #     return profile_instance
+
+
+class UserFollowingSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserFollowing
+        fields = ("id", "following_user_id", "created")
+
+class FollowersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserFollowing
+        fields = ("id", "user_id", "created")

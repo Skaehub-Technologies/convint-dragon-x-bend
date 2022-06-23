@@ -7,7 +7,6 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
 from app.abstracts import TimeStampedModel
 
 
@@ -88,9 +87,23 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
 
 
 class Profile(models.Model):
-    user = models.OneToOneField("user.User", on_delete=models.CASCADE)
+    user = models.OneToOneField("user.User", on_delete = models.CASCADE)
     image = models.URLField(blank=True)
     bio = models.TextField(blank=True)
 
     def __str__(self) -> str:
         return self.user.username
+class UserFollowing(models.Model):
+    user_id = models.ForeignKey("User", related_name="following", on_delete = models.CASCADE)
+    following_user_id = models.ForeignKey("User", related_name="followers", on_delete = models.CASCADE) 
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user_id','following_user_id'],  name="unique_followers")
+        ]
+
+        ordering = ["-created"]
+
+    def __str__(self):
+        f"{self.user_id} follows {self.following_user_id}"

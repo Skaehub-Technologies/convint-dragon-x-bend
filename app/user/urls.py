@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from app.user.views import UserProfileView, UserRegister, UserView
+from app.user.views import UserProfileView, UserRegister, UserView, UserFollowingViewSet
 
 urlpatterns = [
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
@@ -12,4 +12,5 @@ urlpatterns = [
     path("register/", UserRegister.as_view(), name="register"),
     path("profile/<user>", UserProfileView.as_view(), name="profile"),
     path("users/", UserView.as_view(), name="users"),
+    path('following-followers/<user>',UserFollowingViewSet.as_view,name = "following-followers"),
 ]
