@@ -1,0 +1,61 @@
+version: 2.1
+
+orbs:
+  python: circleci/python@2.0.3
+  codecov: codecov/codecov@3.2.3
+  pre-commit: skoblenick/pre-commit@0.2.0
+
+executors:
+  lint_executor:
+    docker:
+      - image: cimg/python:3.10
+  test_executor:
+    docker:
+      - image: cimg/python:3.10
+        environment:
+          DATABASE_URL: postgresql://circle:password@localhost/circle_test?sslmode=disable
+      - image: circleci/postgres:latest
+        environment:
+          POSTGRES_USER: circle
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: circle_test
+
+
+
+jobs:
+  build_and_test:
+    executor: test_executor
+    steps:
+      - checkout
+      - python/install-packages:
+          args: --dev
+          pkg-manager: pipenv
+      - run:
+          name: Test it
+          command: |
+            pipenv run pytest --cov
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - .
+
+  pre-commit:
+    executor: lint_executor
+    steps:
+      - checkout
+      - python/install-packages:
+          args: --dev
+          pkg-manager: pipenv
+      - run:
+          name: Run linters and formatters
+          command: pipenv run pre-commit run --all-files
+
+workflows:
+  lint_and_test:
+    jobs:
+      - pre-commit
+      - build_and_test:
+          requires:
+            - pre-commit
+          post-steps:
+            - codecov/upload

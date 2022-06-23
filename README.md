@@ -1,3 +1,6 @@
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/Skaehub-Technologies/speaksfer-dragon-x-bend/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/Skaehub-Technologies/speaksfer-dragon-x-bend/tree/main)
+
+
 SPEAKSFER
 =======
 
