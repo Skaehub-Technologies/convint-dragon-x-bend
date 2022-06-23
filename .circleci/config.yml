@@ -33,7 +33,7 @@ jobs:
       - run:
           name: Test it
           command: |
-            pipenv run pytest
+            pipenv run pytest --cov
 
   pre-commit:
     executor: lint_executor
