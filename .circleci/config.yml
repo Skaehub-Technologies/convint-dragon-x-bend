@@ -1,0 +1,53 @@
+version: 2.1
+
+orbs:
+  python: circleci/python@2.0.3
+  codecov: codecov/codecov@3.2.3
+  pre-commit: skoblenick/pre-commit@0.2.0
+
+executors:
+  lint_executor:
+    docker:
+      - image: cimg/python:3.10
+  test_executor:
+    docker:
+      - image: cimg/python:3.10
+      - image: circleci/postgres:latest
+        environment:
+          POSTGRES_USER: $POSTGRES_USER
+          POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+          POSTGRES_DB: $POSTGRES_DB
+
+jobs:
+  build_and_test:
+    executor: test_executor
+    steps:
+      - checkout
+      - python/install-packages:
+          args: --dev
+          pkg-manager: pipenv
+      - run:
+          name: Test it
+          command: |
+            pipenv run pytest
+
+  pre-commit:
+    executor: lint_executor
+    steps:
+      - checkout
+      - python/install-packages:
+          args: --dev
+          pkg-manager: pipenv
+      - run:
+          name: Run linters and formatters
+          command: pipenv run pre-commit run --all-files
+
+workflows:
+  lint_and_test:
+    jobs:
+      - pre-commit
+      - build_and_test:
+          requires:
+            - pre-commit
+          post-steps:
+            - codecov/upload
