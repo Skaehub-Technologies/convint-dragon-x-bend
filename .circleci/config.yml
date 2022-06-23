@@ -27,17 +27,21 @@ jobs:
                 args: --dev
                 pkg-manager: pipenv
             - run:
+                name: Test it
                 command: |
                     pipenv run pytest
-                name: Test it
+                
 
     pre-commit:
       executor: lint_executor
       steps:
         - checkout
         - python/install-packages:
-            pkg-manager: pip
-        - run: pre-commit run --all-files
+            args: --dev
+            pkg-manager: pipenv
+        - run: 
+            name: Run linters and formatters
+            command: pipenv run pre-commit run --all-files
 
 workflows:
   lint_and_test:
