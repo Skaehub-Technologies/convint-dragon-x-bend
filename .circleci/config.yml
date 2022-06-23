@@ -1,12 +1,26 @@
 version: 2.1
+
 orbs:
   python: circleci/python@2.0.3
   codecov: codecov/codecov@3.2.3
   pre-commit: skoblenick/pre-commit@0.2.0
 
+executors:
+  lint_executor:
+    docker:
+        - image: cimg/python:3.10
+  test_executor:
+      docker:
+        - image: cimg/python:3.10
+        - image: circleci/postgres:latest
+          environment:
+            POSTGRES_USER: $POSTGRES_USER
+            POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+            POSTGRES_DB: $POSTGRES_DB
+
 jobs:
     build_and_test:
-        executor: my_executor
+        executor: test_executor
         steps:
             - checkout
             - python/install-packages:
@@ -18,30 +32,15 @@ jobs:
                 name: Test it
 
     pre-commit:
-      executor: python/default
+      executor: lint_executor
       steps:
         - checkout
         - python/install-packages:
             pkg-manager: pip
         - run: pre-commit run --all-files
 
-executors:
-  my_executor:
-      docker:
-        - image: cimg/python:3.10
-          environment:
-            SECRET_KEY: circlecisecretkey
-            DATABASE_URL: postgresql://circle:password@localhost/circle_test?sslmode=disable
-            ENV_NAME: local
-        - image: circleci/postgres:latest
-          environment:
-            POSTGRES_USER: circle
-            POSTGRES_PASSWORD: password
-            POSTGRES_DB: circle_test
-
-
 workflows:
-  main:
+  lint_and_test:
     jobs:
       - pre-commit
       - build_and_test:
