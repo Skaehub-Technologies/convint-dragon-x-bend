@@ -1,65 +1,10 @@
 version: 2.1
 orbs:
   python: circleci/python@2.0.3
-  linter: circleci/linter@2.0.0
+  codecov: codecov/codecov@3.2.3
+  pre-commit: skoblenick/pre-commit@0.2.0
 
-# commands:
-#     pre-commit:
-#         description: |
-#             Runs pre-commit hooks against the current repo. Must be run in an executor with git, python, pip.
-#         parameters:
-#             cache_prefix:
-#                 default: ""
-#                 description: |
-#                     Optional cache prefix to be used on CircleCI. Can be used for cache busting or to ensure multiple jobs use different caches.
-#                 type: string
-#             config_file:
-#                 default: .pre-commit-config.yaml
-#                 description: |
-#                     Optional alternate config file.
-#                 type: string
-#         steps:
-#             - run: python -m pip install --progress-bar=off pre-commit
-#             - checkout
-#             - restore_cache:
-#                 keys:
-#                     - cache-pre-commit-<<parameters.cache_prefix>>-{{ checksum "<<parameters.config_file>>" }}
-#             - run: pre-commit install-hooks -c <<parameters.config_file>>
-#             - save_cache:
-#                 key: cache-pre-commit-<<parameters.cache_prefix>>-{{ checksum "<<parameters.config_file>>" }}
-#                 paths:
-#                     - ~/.cache/pre-commit
-#             - run: pre-commit run --all-files -c <<parameters.config_file>>
-#             - run:
-#                 command: git diff
-#                 name: git diff
-#                 when: on_fail       
 jobs:
-    pre-commit:
-        description: |
-            Runs pre-commit hooks against the current repo.
-        docker:
-            - image: python:<<parameters.python_version>>
-        parameters:
-            config_file:
-                default: .pre-commit-config.yaml
-                description: |
-                    Optional alternate config file.
-                type: string
-            python_version:
-                default: 3.10
-                description: |
-                    The python version used to run pre-commit.
-                type: string
-            resource_class:
-                default: small
-                type: string
-        resource_class: <<parameters.resource_class>>
-        steps:
-            - pre-commit:
-                cache_prefix: <<parameters.python_version>>
-                config_file: <<parameters.config_file>>
-
     build_and_test:
         executor: my_executor
         steps:
@@ -71,6 +16,14 @@ jobs:
                 command: |
                     pipenv run pytest
                 name: Test it
+
+    pre-commit:
+      executor: python/default
+      steps:
+        - checkout
+        - python/install-packages:
+            pkg-manager: pip
+        - run: pre-commit run --all-files
 
 executors:
   my_executor:
@@ -85,8 +38,14 @@ executors:
             POSTGRES_USER: circle
             POSTGRES_PASSWORD: password
             POSTGRES_DB: circle_test
+
+
 workflows:
   main:
     jobs:
-        - pre-commit,
-        - build_and_test
+      - pre-commit
+      - build_and_test:
+          requires:
+            - pre-commit
+          post-steps:
+            codecov/upload
