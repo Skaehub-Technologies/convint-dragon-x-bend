@@ -34,6 +34,10 @@ jobs:
           name: Test it
           command: |
             pipenv run pytest --cov
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - .
 
   pre-commit:
     executor: lint_executor
