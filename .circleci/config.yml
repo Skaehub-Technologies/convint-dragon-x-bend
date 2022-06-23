@@ -12,11 +12,15 @@ executors:
   test_executor:
     docker:
       - image: cimg/python:3.10
+        environment:
+          DATABASE_URL: postgresql://circle:password@localhost/circle_test?sslmode=disable
       - image: circleci/postgres:latest
         environment:
-          POSTGRES_USER: $POSTGRES_USER
-          POSTGRES_PASSWORD: $POSTGRES_PASSWORD
-          POSTGRES_DB: $POSTGRES_DB
+          POSTGRES_USER: circle
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: circle_test
+
+
 
 jobs:
   build_and_test:
