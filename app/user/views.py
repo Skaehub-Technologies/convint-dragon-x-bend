@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from platformdirs import user_documents_path
 from rest_framework import generics, status
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -11,6 +10,7 @@ from app.user.serializers import ProfileSerializer, UserSerializer, UserFollowin
 from rest_framework import viewsets
 
 User = get_user_model()
+
 
 
 class UserRegister(APIView):
@@ -45,7 +45,9 @@ class UserView(generics.ListAPIView):
     queryset = User.objects.all()
 
 class UserFollowingViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly)
+    lookup_field = "following"
     serializer_class = UserFollowingSerializer
-    lookup_field = "user"
-    queryset = UserFollowing.objects.all()
+
+    def get_queryset(self):
+        return self.request.user.UserFollowing.all()
