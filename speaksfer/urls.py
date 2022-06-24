@@ -24,8 +24,6 @@ schema_view = get_schema_view(
         title="Speaksfer API",
         default_version="v1",
         description="Test description",
-        terms_of_service="https://www.speaksfer.com/policies/terms/",
-        contact=openapi.Contact(email="contact@speaksfer.local"),
         license=openapi.License(name="BSD License"),
     ),
     public=True,
