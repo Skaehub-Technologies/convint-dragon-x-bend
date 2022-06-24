@@ -23,7 +23,7 @@ schema_view = get_schema_view(
     openapi.Info(
         title="Speaksfer API",
         default_version="v1",
-        description="Test description",
+        description="Documentation for Speaksfer API to enable tracking of the backend in building the application",
         license=openapi.License(name="BSD License"),
     ),
     public=True,
