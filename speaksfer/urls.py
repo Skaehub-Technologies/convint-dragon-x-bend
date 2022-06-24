@@ -26,7 +26,7 @@ schema_view = get_schema_view(
         description="Test description",
         terms_of_service="https://www.speaksfer.com/policies/terms/",
         contact=openapi.Contact(email="contact@speaksfer.local"),
-        license=openapi.License(name="Test License"),
+        license=openapi.License(name="BSD License"),
     ),
     public=True,
     permission_classes=[permissions.AllowAny],
