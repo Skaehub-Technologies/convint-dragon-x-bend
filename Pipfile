@@ -12,6 +12,9 @@ djangorestframework = "*"
 markdown = "*"
 django-filter = "*"
 djangorestframework-simplejwt = "*"
+pillow = "*"
+cloudinary = "*"
+dj3-cloudinary-storage = "*"
 
 [dev-packages]
 pre-commit = "*"

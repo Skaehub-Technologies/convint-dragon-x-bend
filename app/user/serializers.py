@@ -64,12 +64,17 @@ class UserSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username")
     bio = serializers.CharField(allow_blank=True, required=False)
-    # image = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
-        fields = ("username", "bio")
+        fields = ("username", "bio", "image")
         read_only_fields = ["username"]
+
+    def get_image(self, obj) -> Any:  # type: ignore
+        request = self.context.get("request")
+        image_url = obj.image.url
+        return request.build_absolute_uri(image_url)  # type: ignore
 
     # def create(self, validated_data):
     #     user_data = validated_data.pop('user')
