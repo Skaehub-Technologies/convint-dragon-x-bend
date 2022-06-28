@@ -14,8 +14,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from app.user import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("app.user.urls")),
+     path(
+        "",
+        views.PasswordReset.as_view(),
+        name="request-password-reset",
+    ),
+    path(
+        "password-reset/<str:encoded_pk>/<str:token>/",
+        views.ResetPasswordAPI.as_view(),
+        name="reset-password",
+    ),
 ]
