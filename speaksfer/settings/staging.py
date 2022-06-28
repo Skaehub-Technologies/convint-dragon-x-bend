@@ -1,3 +1,5 @@
-from speaksfer.settings.base import ALLOWED_HOSTS  # noqa F401
+from speaksfer.settings.base import ALLOWED_HOSTS
+
+ALLOWED_HOSTS += [".herokuapp.com"]
 
 DEBUG = True
