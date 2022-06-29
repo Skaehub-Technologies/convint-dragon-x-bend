@@ -8,13 +8,14 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from app.users.serializers import UserSerializer
 from rest_framework import generics, status,response
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from . import serializers
 
+User = get_user_model()
 class UserRegister(APIView):
     def post(self, request: Request, format: str = "json") -> Response:
         serializer = UserSerializer(data=request.data)
