@@ -1,5 +1,4 @@
 from typing import Any, Literal
-
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -8,9 +7,7 @@ from django.contrib.auth.models import (
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from app.abstracts import TimeStampedModel
-from django.dispatch import receiver
-from django.urls import reverse
-from django.core.mail import send_mail  
+
 class UserManager(BaseUserManager):
     use_in_migrations: Literal[True]
 
@@ -88,7 +85,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
 
 
 class Profile(models.Model):
-    user = models.OneToOneField("user.User", on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     image = models.URLField(blank=True)
     bio = models.TextField(blank=True)
 

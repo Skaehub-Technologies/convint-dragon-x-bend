@@ -7,10 +7,9 @@ from rest_framework.validators import UniqueValidator
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_decode
 from speaksfer.settings.base import EMAIL_USER
+from app.users.models import Profile
 
 User = get_user_model()
-Profile = get_user_model()
-
 
 class UserSerializer(serializers.ModelSerializer):
 
