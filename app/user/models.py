@@ -42,7 +42,6 @@ class UserManager(BaseUserManager):
     ) -> Any:
         kwargs.setdefault("is_staff", True)
         kwargs.setdefault("is_superuser", True)
-        kwargs.setdefault("is_active", True)
 
         if not password:
             raise ValueError("Password is required")
