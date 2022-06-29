@@ -93,8 +93,7 @@ class ResetPasswordSerializer(serializers.Serializer):
 
         pk = urlsafe_base64_decode(encoded_pk).decode()
         user = User.objects.get(pk=pk)
-        user = User.objects.get(id=id)
-
+       
         if not PasswordResetTokenGenerator().check_token(user, token):
             raise serializers.ValidationError("The reset token is invalid")
 
