@@ -1,17 +1,17 @@
 from typing import Any
 
-import jwt
-from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from rest_framework import serializers, status
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from rest_framework import serializers
 from rest_framework.request import Request
-from rest_framework.response import Response
 from rest_framework.validators import UniqueValidator
-from rest_framework.views import APIView
 
 from app.user.models import Profile
+from app.user.token import account_activation_token
 from speaksfer.settings.base import EMAIL_USER
 
 User = get_user_model()
@@ -40,10 +40,19 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ("email", "username", "password")
 
     @staticmethod
-    def send_email(user: Any) -> None:
+    def send_email(user: Any, request: Request) -> None:
+
+        current_site_info = get_current_site(request)
         email_body = render_to_string(
-            "email_verification.html", {"user": user}
+            "email_verification.html",
+            {
+                "user": user,
+                "domain": current_site_info.domain,
+                "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                "token": account_activation_token.make_token(user),
+            },
         )
+
         send_mail(
             "Verify  your email!",
             email_body,
@@ -53,33 +62,11 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data: Any) -> Any:
+        request = self.context.get("request")
         user = User.objects.create_user(**validated_data)
-        self.send_email(user)
+        self.send_email(user, request)  # type: ignore
 
         return user
-
-
-class VerifyEmailSerializer(APIView):
-    def get(self, request: Request) -> Response:
-        token = request.GET.get("token")
-        try:
-            payload = jwt.decode(token, settings.SECRET_KEY)  # type: ignore
-            user = User.objects.get(id=payload["user_id"])
-            if not user.is_verified:
-                user.is_verified = True
-                user.save()
-            return Response(
-                {"email": "Successfully Activated"}, status=status.HTTP_200_OK
-            )
-        except jwt.ExpiredSignatureError as identifier:  # noqa F841
-            return Response(
-                {"error": "Activation Link is expired"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        except jwt.exceptions.DecodeError as identifier:  # noqa F841
-            return Response(
-                {"error": "Invalid Token"}, status=status.HTTP_400_BAD_REQUEST
-            )
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -91,3 +78,33 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ("username", "bio", "image")
         read_only_fields = "username"
+
+
+class VerifyEmailSerializer(serializers.Serializer):
+    token = serializers.CharField()
+    uidb64 = serializers.CharField()
+
+    class Meta:
+        fields = ("token", "uidb64")
+
+    def validate(self, data: Any) -> Any:
+        user = None
+        try:
+            user_id = force_str(urlsafe_base64_decode(data.get("uidb64")))
+            user = User.objects.get(pk=user_id)
+
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            raise serializers.ValidationError(
+                "Invalid user id", code="invalid_code"
+            )
+
+        token = data.get("token")
+
+        if user and account_activation_token.check_token(user, token):
+            user.is_verified = True
+            user.save()
+            return data
+
+        raise serializers.ValidationError(
+            "Invalid or expired token", code="invalid_token"
+        )
