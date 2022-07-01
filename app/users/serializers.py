@@ -1,15 +1,8 @@
-from typing import Any
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-
-from app.users.models import Profile
-from speaksfer.settings.base import EMAIL_USER
 
 User = get_user_model()
 
@@ -36,43 +29,14 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ("email", "username", "password")
 
-    @staticmethod
-    def send_email(user: Any) -> None:
-        email_body = render_to_string(
-            "email_verification.html", {"user": user}
-        )
-        send_mail(
-            "Verify  your email!",
-            email_body,
-            EMAIL_USER,
-            [user.email],
-            fail_silently=False,
-        )
-
-    def create(self, validated_data: Any) -> Any:
-        user = User.objects.create_user(**validated_data)
-        self.send_email(user)
-
-        return user
-
-
-class ProfileSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source="user.username")
-    bio = serializers.CharField(allow_blank=True, required=False)
-    image = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Profile
-        fields = ("username", "bio", "image")
-        read_only_fields = "username"
-
 
 class EmailSerializer(serializers.Serializer):
 
     email = serializers.EmailField()
 
     class Meta:
-        fields = ("email",)
+        abstract = True
+        fields = "email"
 
 
 class ResetPasswordSerializer(serializers.Serializer):
