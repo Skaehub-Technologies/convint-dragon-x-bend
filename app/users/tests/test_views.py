@@ -1,7 +1,5 @@
-from base64 import encode
 from django.test import RequestFactory, TestCase
 from pyparsing import replaceWith
-from requests import request
 from app.users.views import PasswordReset, ResetPasswordAPI
 from django.contrib.auth import get_user_model
 from rest_framework import status
@@ -10,8 +8,6 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 User = get_user_model()
-Password_Reset = PasswordReset.as_view()
-
 class PasswordResetTest(TestCase):
     def setUp(self) -> None:
         self.factory = RequestFactory()
