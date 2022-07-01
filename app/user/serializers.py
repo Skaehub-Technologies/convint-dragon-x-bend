@@ -12,6 +12,12 @@ from rest_framework.validators import UniqueValidator
 
 from app.user.models import Profile
 from app.user.token import account_activation_token
+from app.user.validators import (
+    validate_password_digit,
+    validate_password_lowercase,
+    validate_password_symbol,
+    validate_password_uppercase,
+)
 from speaksfer.settings.base import EMAIL_USER
 
 User = get_user_model()
@@ -22,6 +28,7 @@ class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=20,
         min_length=8,
+        validators=[UniqueValidator(queryset=User.objects.all())],
     )
 
     email = serializers.EmailField(
@@ -33,11 +40,29 @@ class UserSerializer(serializers.ModelSerializer):
         max_length=128,
         min_length=8,
         write_only=True,
+        validators=[
+            validate_password_digit,
+            validate_password_uppercase,
+            validate_password_symbol,
+            validate_password_lowercase,
+        ],
     )
 
     class Meta:
         model = User
         fields = ("email", "username", "password")
+
+    # def validate_length(self, data) -> Any:
+    #     user = User(**data)
+    #     password = data.get("password")
+    #     errors = dict()
+    #     try:
+    #         validator.MinimumLengthValidator(min_length=8)
+    #     except exceptions.ValidationError as e:
+    #         errors[password] = list(e.messages)
+    #     if errors:
+    #         raise serializers.ValidationError(errors)
+    #     return super(UserSerializer, self).validate(data)
 
     @staticmethod
     def send_email(user: Any, request: Request) -> None:
