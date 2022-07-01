@@ -29,7 +29,9 @@ class UserRegister(APIView):
 class VerifyEmailView(GenericAPIView):
     serializer_class = VerifyEmailSerializer
 
-    def get(self, request, uidb64, token, **kwargs) -> Response:  # type: ignore
+    def get(
+        self, request: Request, uidb64: str, token: str, **kwargs: str
+    ) -> Response:
         data = {"uidb64": uidb64, "token": token}
 
         serializer = self.get_serializer(data=data)
