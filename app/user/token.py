@@ -5,7 +5,7 @@ from django.utils.encoding import smart_bytes
 
 
 class TokenGenerator(PasswordResetTokenGenerator):
-    def _make_hash_value(self, user, timestamp) -> Any:  # type: ignore
+    def _make_hash_value(self, user: Any, timestamp: Any) -> Any:
         return (
             smart_bytes(user.pk)
             + smart_bytes(timestamp)
