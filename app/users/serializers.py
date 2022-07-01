@@ -1,15 +1,19 @@
 from typing import Any
+
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.http import urlsafe_base64_decode
-from speaksfer.settings.base import EMAIL_USER
+
 from app.users.models import Profile
+from speaksfer.settings.base import EMAIL_USER
 
 User = get_user_model()
+
+
 class UserSerializer(serializers.ModelSerializer):
 
     username = serializers.CharField(
@@ -51,6 +55,7 @@ class UserSerializer(serializers.ModelSerializer):
 
         return user
 
+
 class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username")
     bio = serializers.CharField(allow_blank=True, required=False)
@@ -61,8 +66,9 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ("username", "bio", "image")
         read_only_fields = "username"
 
+
 class EmailSerializer(serializers.Serializer):
-   
+
     email = serializers.EmailField()
 
     class Meta:
@@ -70,35 +76,22 @@ class EmailSerializer(serializers.Serializer):
 
 
 class ResetPasswordSerializer(serializers.Serializer):
-   
+    """
+    Reset Password Serializer.
+
+    """
+
     password = serializers.CharField(
         write_only=True,
         min_length=1,
     )
 
     class Meta:
-        field = ("password")
-
-    # @staticmethod
-    # def send_email(user: Any) -> None:
-    #     current_site_info = get_current_site()
-    #     email_body = render_to_string("password_reset.html", {"user": user, "domain":
-    #     current_site_info.domain, 
-    #     "pk": urlsafe_base64_decode(user.pk).decode(),
-    #     "token": PasswordResetTokenGenerator().check_token(user) },
-    #     )
-    #     send_mail(
-    #         "Verify  your email!",
-    #         email_body,
-    #         EMAIL_USER,
-    #         [user.email],
-    #         fail_silently=False,
-    #     )    
+        field = "password"
 
     def validate(self, data):
         """
         Verify token and encoded_pk and then set new password.
-        
         """
         password = data.get("password")
         token = self.context.get("kwargs").get("token")
@@ -109,7 +102,6 @@ class ResetPasswordSerializer(serializers.Serializer):
 
         pk = urlsafe_base64_decode(encoded_pk).decode()
         user = User.objects.get(pk=pk)
-       
         if not PasswordResetTokenGenerator().check_token(user, token):
             raise serializers.ValidationError("The reset token is invalid")
 

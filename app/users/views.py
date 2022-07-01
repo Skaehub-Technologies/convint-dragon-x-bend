@@ -1,22 +1,21 @@
-from rest_framework import status
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.urls import reverse
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
-from app.users.serializers import UserSerializer
-from rest_framework import generics, status,response
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from rest_framework import generics, response, status
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from app.users.serializers import UserSerializer
+
 from . import serializers
 
-
 User = get_user_model()
+
+
 class UserRegister(APIView):
     def post(self, request: Request, format: str = "json") -> Response:
         serializer = UserSerializer(data=request.data)
@@ -55,10 +54,7 @@ class PasswordReset(generics.GenericAPIView):
             reset_link = f"localhost:8000{reset_url}"
 
             return response.Response(
-                {
-                    "message": 
-                    f"Your password reset link: {reset_link}"
-                },
+                {"message": f"Your password reset link: {reset_link}"},
                 status=status.HTTP_200_OK,
             )
         else:

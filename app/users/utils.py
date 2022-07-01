@@ -1,7 +1,10 @@
 from typing import Any
+
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+
 from speaksfer.settings import EMAIL_USER
+
 
 class Util:
     @staticmethod
