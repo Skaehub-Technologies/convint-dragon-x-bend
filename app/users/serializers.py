@@ -10,7 +10,6 @@ from speaksfer.settings.base import EMAIL_USER
 from app.users.models import Profile
 
 User = get_user_model()
-
 class UserSerializer(serializers.ModelSerializer):
 
     username = serializers.CharField(
@@ -80,9 +79,26 @@ class ResetPasswordSerializer(serializers.Serializer):
     class Meta:
         field = ("password")
 
+    # @staticmethod
+    # def send_email(user: Any) -> None:
+    #     current_site_info = get_current_site()
+    #     email_body = render_to_string("password_reset.html", {"user": user, "domain":
+    #     current_site_info.domain, 
+    #     "pk": urlsafe_base64_decode(user.pk).decode(),
+    #     "token": PasswordResetTokenGenerator().check_token(user) },
+    #     )
+    #     send_mail(
+    #         "Verify  your email!",
+    #         email_body,
+    #         EMAIL_USER,
+    #         [user.email],
+    #         fail_silently=False,
+    #     )    
+
     def validate(self, data):
         """
         Verify token and encoded_pk and then set new password.
+        
         """
         password = data.get("password")
         token = self.context.get("kwargs").get("token")

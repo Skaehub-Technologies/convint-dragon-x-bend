@@ -15,6 +15,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from . import serializers
 
+
 User = get_user_model()
 class UserRegister(APIView):
     def post(self, request: Request, format: str = "json") -> Response:
@@ -53,12 +54,10 @@ class PasswordReset(generics.GenericAPIView):
             )
             reset_link = f"localhost:8000{reset_url}"
 
-            # send the rest_link as mail to the user.
-
             return response.Response(
                 {
                     "message": 
-                    f"Your password rest link: {reset_link}"
+                    f"Your password reset link: {reset_link}"
                 },
                 status=status.HTTP_200_OK,
             )
