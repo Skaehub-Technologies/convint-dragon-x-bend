@@ -52,18 +52,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ("email", "username", "password")
 
-    # def validate_length(self, data) -> Any:
-    #     user = User(**data)
-    #     password = data.get("password")
-    #     errors = dict()
-    #     try:
-    #         validator.MinimumLengthValidator(min_length=8)
-    #     except exceptions.ValidationError as e:
-    #         errors[password] = list(e.messages)
-    #     if errors:
-    #         raise serializers.ValidationError(errors)
-    #     return super(UserSerializer, self).validate(data)
-
     @staticmethod
     def send_email(user: Any, request: Request) -> None:
 
