@@ -8,6 +8,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.sites.shortcuts import get_current_site
 
 from app.users.serializers import UserSerializer
 
@@ -47,11 +48,12 @@ class PasswordReset(generics.GenericAPIView):
         if user:
             encoded_pk = urlsafe_base64_encode(force_bytes(user.pk))
             token = PasswordResetTokenGenerator().make_token(user)
+            current_site = get_current_site(request).domain
             reset_url = reverse(
                 "reset-password",
                 kwargs={"encoded_pk": encoded_pk, "token": token},
             )
-            reset_link = f"localhost:8000{reset_url}"
+            reset_link= f"http://{current_site}{reset_url}"
 
             return response.Response(
                 {"message": f"Your password reset link: {reset_link}"},
