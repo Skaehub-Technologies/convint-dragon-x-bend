@@ -35,7 +35,6 @@ class EmailSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
     class Meta:
-        abstract = True
         fields = "email"
 
 
