@@ -3,11 +3,13 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from faker import Faker
 from rest_framework import status
 
 from app.user.token import account_activation_token
 
 User = get_user_model()
+fake = Faker()
 
 
 class ViewsTest(TestCase):
@@ -22,17 +24,16 @@ class ViewsTest(TestCase):
     # Testing UserView
     def test_create_user(self) -> None:
         data = {
-            "username": "foobarata",
-            "email": "foobar@example.com",
-            "password": "somepassword",
+            "username": fake.name(),
+            "email": fake.email(),
+            "password": fake.password(),
         }
 
         response = self.client.post(self.create_url, data, format="json")
 
-        self.assertNotEqual(response, status.HTTP_201_CREATED)
-        # self.assertEqual(response.data["username"], str("foobarata"))  # type: ignore
-        # self.assertEqual(response.data["email"], str("foobar@example.com"))  # type: ignore
-        self.assertTrue("password" in response.data)  # type: ignore
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertNotEqual(response.data["username"], fake.name())  # type: ignore
+        self.assertNotEqual(response.data["email"], fake.email())  # type: ignore
 
     def test_new_user_verification(self) -> None:
         new_user = User.objects.create_user(
