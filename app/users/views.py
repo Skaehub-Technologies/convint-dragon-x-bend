@@ -1,3 +1,4 @@
+from socket import send_fds
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.urls import reverse
@@ -9,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.sites.shortcuts import get_current_site
-
+from app.users.utils import Util
 from app.users.serializers import UserSerializer
 
 from . import serializers
@@ -48,15 +49,23 @@ class PasswordReset(generics.GenericAPIView):
         if user:
             encoded_pk = urlsafe_base64_encode(force_bytes(user.pk))
             token = PasswordResetTokenGenerator().make_token(user)
+
             current_site = get_current_site(request).domain
             reset_url = reverse(
                 "reset-password",
                 kwargs={"encoded_pk": encoded_pk, "token": token},
             )
             reset_link= f"http://{current_site}{reset_url}"
+            data =	{
+                     "body": f"Click this link to reset your password {reset_link}",
+                     "subject": "Your Password Reset Link",
+                     "recipient": email 
+                    }
+
+            Util.send_email(data)
 
             return response.Response(
-                {"message": f"Your password reset link: {reset_link}"},
+                {"message": "Check your email for your password reset link"},
                 status=status.HTTP_200_OK,
             )
         else:
