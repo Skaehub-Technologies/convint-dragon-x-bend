@@ -21,8 +21,8 @@ class ViewsTest(TestCase):
         )
         self.create_url = reverse("register")
 
-    # Testing UserView
     def test_create_user(self) -> None:
+        """Testing UserView"""
         data = {
             "username": fake.name(),
             "email": fake.email(),

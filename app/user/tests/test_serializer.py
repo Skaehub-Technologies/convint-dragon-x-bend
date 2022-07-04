@@ -1,17 +1,19 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from faker import Faker
 
 from app.user.models import Profile
 
 User = get_user_model()
+fake = Faker()
 
 
 class ImageUploadTest(TestCase):
-    def test_get_image(self):  # type: ignore
+    def test_get_image(self) -> None:
         user = User.objects.create(
-            username="bearhands",
-            email="bear@gmail.com",
-            password="bearpassword",
+            username=fake.name(),
+            email=fake.email(),
+            password=fake.password(),
         )
         data = Profile.objects.create(
             image="images/sample.jpg", bio="Hello mellow", user_id=user.id
