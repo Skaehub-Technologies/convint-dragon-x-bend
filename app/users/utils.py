@@ -8,17 +8,19 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.encoding import smart_bytes
 from django.utils.http import urlsafe_base64_encode
+
 from speaksfer.settings import EMAIL_USER
 
 User = get_user_model()
+
 
 class Util:
     @staticmethod
     def send_email(template: str, email_data: Any) -> None:
         email_body = render_to_string(
             template, {"body": email_data.get("body")}
-        ) 
-        
+        )
+
         send_mail(
             email_data.get("subject"),
             email_body,
