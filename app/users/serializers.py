@@ -3,8 +3,9 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from django.utils.http import urlsafe_base64_decode
-from speaksfer.settings.base import EMAIL_USER
+from app.users.utils import Util
+from rest_framework.exceptions import ParseError
+from typing import Any
 
 User = get_user_model()
 
@@ -30,33 +31,38 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ("email", "username", "password")
 
-class EmailSerializer(serializers.Serializer):
+class PasswordResetSerializer(serializers.Serializer):
 
-    email = serializers.EmailField()
+    email = serializers.EmailField(required=True)
 
     class Meta:
-        fields = "email"
+        fields = ["email"]
+    
+    def validate(self, attrs: Any) -> Any:
+        try:
+            request = self.context.get("request")
+            email = attrs.get("email")
+            user = Util.generate_reset_token(email)
 
+            if user:
+                email_data = Util.create_reset_email(request, *user)
+                Util.send_email("password_reset.html", email_data)
+        except KeyError:
+            raise ParseError("email must be provided")
+        return super().validate(attrs)
 
 class ResetPasswordSerializer(serializers.Serializer):
-    """
-    Reset Password Serializer.
-
-    """
 
     password = serializers.CharField(
         write_only=True,
         min_length=1,
     )
-
     class Meta:
-        field = "password"
-
+        
+        fields = ["password"]
+    
     def validate(self, data):
-        """
-        Verify token and encoded_pk and then set new password.
-
-        """
+      
         password = data.get("password")
         token = self.context.get("kwargs").get("token")
         encoded_pk = self.context.get("kwargs").get("encoded_pk")
