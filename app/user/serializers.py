@@ -7,7 +7,6 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import serializers
-from rest_framework.request import Request
 from rest_framework.validators import UniqueValidator
 
 from app.user.models import Profile
@@ -53,7 +52,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ("email", "username", "password")
 
     @staticmethod
-    def send_email(user: Any, request: Request) -> None:
+    def send_email(user: Any, request: Any) -> None:
 
         current_site_info = get_current_site(request)
         email_body = render_to_string(
@@ -77,7 +76,7 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data: Any) -> Any:
         request = self.context.get("request")
         user = User.objects.create_user(**validated_data)
-        self.send_email(user, request)  # type: ignore
+        self.send_email(user, request)
 
         return user
 
@@ -100,10 +99,11 @@ class VerifyEmailSerializer(serializers.Serializer):
     class Meta:
         fields = ("token", "uidb64")
 
-    def validate(self, data: Any) -> Any:
+    def save(self, **kwargs: Any) -> Any:
+        data = kwargs.get("data")
         user = None
         try:
-            user_id = force_str(urlsafe_base64_decode(data.get("uidb64")))
+            user_id = force_str(urlsafe_base64_decode(data.get("uidb64")))  # type: ignore[union-attr]
             user = User.objects.get(pk=user_id)
 
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
@@ -111,11 +111,10 @@ class VerifyEmailSerializer(serializers.Serializer):
                 "Invalid user id", code="invalid_code"
             )
 
-        token = data.get("token")
+        token = data.get("token")  # type: ignore[union-attr]
 
         if user and account_activation_token.check_token(user, token):
             user.is_verified = True
-            user.save()
             return data
 
         raise serializers.ValidationError(
