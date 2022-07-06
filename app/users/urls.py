@@ -5,11 +5,10 @@ from app.users.views import (
     UserFollowingView  
 ) 
 
+app_name = 'users'
+
 urlpatterns = [
-    path(
-       "users/follow/",UserFollowerView.as_view(), name="user-follow"
-    ),
-    path(
-        "users/following/", UserFollowingView.as_view(), name="user-following"
-    ),
+    path('users/UserFollower', UserFollowerView.as_view()),
+    path('users/UserFollowing', UserFollowingView.as_view()),
+
 ]
