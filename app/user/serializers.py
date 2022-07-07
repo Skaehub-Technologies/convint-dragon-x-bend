@@ -6,7 +6,6 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from hashid_field.rest import HashidSerializerCharField
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
@@ -24,8 +23,6 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-
-    id = HashidSerializerCharField(source_field="User.id", read_only=True)
 
     username = serializers.CharField(
         max_length=20,
@@ -52,7 +49,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "email", "username", "password")
+        fields = ("email", "username", "password")
 
     @staticmethod
     def send_email(user: Any, request: Any) -> None:
