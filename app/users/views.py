@@ -30,11 +30,12 @@ class UserRegister(APIView):
 class PasswordReset(generics.GenericAPIView):
     """
     Request for Password Reset Link.
+
     """
 
     serializer_class = PasswordResetSerializer
 
-    def post(self, request: Any) -> Any:
+    def post(self, request: Request, format: str = "json") -> Response:
 
         serializer = self.get_serializer(
             data={"email": request.data.get("email")}
@@ -47,14 +48,10 @@ class PasswordReset(generics.GenericAPIView):
 
 
 class ResetPasswordAPI(generics.GenericAPIView):
-    """
-    Verify and Reset Password Token View.
-
-    """
 
     serializer_class = ResetPasswordSerializer
 
-    def patch(self, request: Any, *args: Any, **kwargs: Any) -> Any:
+    def post(self, request: Any, *args: Any, **kwargs: Any) -> Any:
         """
         Verify token & encoded_pk and then reset the password.
 

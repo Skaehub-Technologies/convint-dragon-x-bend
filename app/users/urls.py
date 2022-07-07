@@ -4,21 +4,16 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from app.users import views
-from app.users.views import UserRegister
+from app.users.views import PasswordReset, ResetPasswordAPI, UserRegister
 
 urlpatterns = [
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    path("register/", UserRegister.as_view(), name="register"),
+    path("api/register/", UserRegister.as_view(), name="register"),
+    path("", PasswordReset.as_view(), name="request-password-reset"),
     path(
-        "",
-        views.PasswordReset.as_view(),
-        name="request-password-reset",
-    ),
-    path(
-        "password-reset/<str:encoded_pk>/<str:token>/",
-        views.ResetPasswordAPI.as_view(),
+        "request-password-reset/<str:encoded_pk>/<str:token>/",
+        ResetPasswordAPI.as_view(),
         name="reset-password",
     ),
 ]

@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "rest_framework.authtoken",
-    "django_rest_passwordreset",
 ]
 
 AUTH_USER_MODEL = "users.User"
