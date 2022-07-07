@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config("SECRET_KEY")
-HASHID_FIELD_SALT = config("HASHID_FIELD_SALT")
+HASHID_FIELD_SALT = "7g(13p#!2lp*6h2cy3%3w)jhqh=*0gg+&xk^h^%@ot4@e0p_@_"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
