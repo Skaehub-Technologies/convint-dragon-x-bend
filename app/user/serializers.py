@@ -9,7 +9,6 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from app.user.models import Profile
 from app.user.token import account_activation_token
 from app.user.validators import (
     validate_password_digit,
@@ -81,17 +80,6 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-class ProfileSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source="user.username")
-    bio = serializers.CharField(allow_blank=True, required=False)
-    image = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Profile
-        fields = ("username", "bio", "image")
-        read_only_fields = "username"
-
-
 class VerifyEmailSerializer(serializers.Serializer):
     token = serializers.CharField()
     uidb64 = serializers.CharField()
@@ -99,11 +87,10 @@ class VerifyEmailSerializer(serializers.Serializer):
     class Meta:
         fields = ("token", "uidb64")
 
-    def save(self, **kwargs: Any) -> Any:
-        data = kwargs.get("data")
+    def validate(self, data: Any) -> Any:
         user = None
         try:
-            user_id = force_str(urlsafe_base64_decode(data.get("uidb64")))  # type: ignore[union-attr]
+            user_id = force_str(urlsafe_base64_decode(data.get("uidb64")))
             user = User.objects.get(pk=user_id)
 
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
@@ -111,12 +98,20 @@ class VerifyEmailSerializer(serializers.Serializer):
                 "Invalid user id", code="invalid_code"
             )
 
-        token = data.get("token")  # type: ignore[union-attr]
-
+        token = data.get("token")
         if user and account_activation_token.check_token(user, token):
-            user.is_verified = True
+
             return data
 
         raise serializers.ValidationError(
             "Invalid or expired token", code="invalid_token"
         )
+
+    def save(self, **kwargs: Any) -> Any:
+        user_id = force_str(
+            urlsafe_base64_decode(self.validated_data.get("uidb64"))
+        )
+        user = User.objects.get(pk=user_id)
+        user.is_verified = True
+        user.save()
+        return user

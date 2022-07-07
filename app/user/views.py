@@ -29,11 +29,12 @@ class UserRegister(APIView):
 class VerifyEmailView(GenericAPIView):
     serializer_class = VerifyEmailSerializer
 
-    def get(
+    def patch(
         self, request: Request, uidb64: str, token: str, **kwargs: str
     ) -> Response:
         data = {"uidb64": uidb64, "token": token}
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response("Email verified", status=status.HTTP_200_OK)
