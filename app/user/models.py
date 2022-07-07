@@ -7,6 +7,7 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from hashid_field import BigHashidAutoField
 
 from app.abstracts import TimeStampedModel
 
@@ -54,6 +55,9 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
+    id = BigHashidAutoField(
+        primary_key=True, prefix="a_", alphabet="0123456789abcdef"
+    )
     username = models.CharField(
         _("username"),
         max_length=150,
