@@ -5,7 +5,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
 
-from app.users.utils import (
+from app.user.utils import (
     create_reset_email,
     generate_reset_token,
     send_email,

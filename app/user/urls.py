@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from app.users.views import PasswordReset, ResetPasswordAPI
+from app.user.views import PasswordReset, ResetPasswordAPI
 
 urlpatterns = [
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
