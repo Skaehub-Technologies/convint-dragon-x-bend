@@ -12,7 +12,7 @@ User = get_user_model()
 fake = Faker()
 
 
-class ViewsTest(TestCase):
+class UserRegisterViewsTest(TestCase):
     """Testing views"""
 
     def setUp(self) -> None:

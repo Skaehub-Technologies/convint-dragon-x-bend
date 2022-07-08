@@ -100,7 +100,6 @@ class VerifyEmailSerializer(serializers.Serializer):
 
         token = data.get("token")
         if user and account_activation_token.check_token(user, token):
-
             return data
 
         raise serializers.ValidationError(
