@@ -1,6 +1,7 @@
 from typing import Any
 
 from django.contrib.auth import get_user_model
+from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 from django.utils.encoding import force_bytes
@@ -47,6 +48,7 @@ class UserRegisterViewsTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(res_data["username"], data["username"])
         self.assertEqual(res_data["email"], data["email"])
+        self.assertTrue(len(mail.outbox) > 0)
 
     def test_new_user_verification(self) -> None:
         """
