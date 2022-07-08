@@ -85,12 +85,3 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     objects = UserManager()
     REQUIRED_FIELDS = ["username", "password"]
     USERNAME_FIELD = "email"
-
-
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    image = models.URLField(blank=True)
-    bio = models.TextField(blank=True)
-
-    def __str__(self) -> str:
-        return self.user.username

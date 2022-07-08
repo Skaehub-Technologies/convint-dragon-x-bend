@@ -4,7 +4,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 
 from app.users.utils import (
     create_reset_email,
@@ -13,29 +12,6 @@ from app.users.utils import (
 )
 
 User = get_user_model()
-
-
-class UserSerializer(serializers.ModelSerializer):
-
-    username = serializers.CharField(
-        max_length=20,
-        min_length=8,
-    )
-
-    email = serializers.EmailField(
-        required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())],
-    )
-
-    password = serializers.CharField(
-        max_length=128,
-        min_length=8,
-        write_only=True,
-    )
-
-    class Meta:
-        model = User
-        fields = ("email", "username", "password")
 
 
 class PasswordResetSerializer(serializers.Serializer):
