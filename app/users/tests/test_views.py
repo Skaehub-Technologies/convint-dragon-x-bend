@@ -26,7 +26,6 @@ class PasswordResetTest(TestCase):
     def test_password_reset_no_email(self) -> None:
         url = reverse("request-password-reset")
         response = self.client.post(url, format="json")
-        # self.assertEqual(response.data, {"message": "Email is Required"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_request_password_reset_email(self) -> None:
