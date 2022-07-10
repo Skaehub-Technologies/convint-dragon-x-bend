@@ -22,7 +22,7 @@ class UserFollow(generics.GenericAPIView):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        serializer_two = UserFollowingSerializer(follow)
-        return Response(serializer_two.data, status=status.HTTP_200_OK)    
+        serializer = UserFollowingSerializer(follow)
+        return Response(serializer.data, status=status.HTTP_200_OK)    
 
    
