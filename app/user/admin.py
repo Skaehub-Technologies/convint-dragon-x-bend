@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 
-from app.users.models import Profile, UserFollowing
+from app.user.models import Profile, UserFollowing
 
 User = get_user_model()
 

@@ -8,7 +8,7 @@ from django.contrib.auth.models import (
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from app.users.abstract import TimeStampedModel
+from app.user.abstract import TimeStampedModel
 
 
 class UserManager(BaseUserManager):
@@ -103,4 +103,5 @@ class UserFollowing(TimeStampedModel):
         ordering = ["-created_at"]
 
     def __str__(self)-> str:
-        f"{self.follower.username} follows {self.following.username}"
+     return f"{self.follower.username} follows {self.following.username}"
+
