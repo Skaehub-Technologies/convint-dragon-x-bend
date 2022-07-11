@@ -9,6 +9,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
+from app.user.models import Profile
 from app.user.token import account_activation_token
 from app.user.validators import (
     validate_password_digit,
@@ -114,3 +115,19 @@ class VerifyEmailSerializer(serializers.Serializer):
         user.is_verified = True
         user.save()
         return user
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username")
+    bio = serializers.CharField(allow_blank=True, required=False)
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Profile
+        fields = ("username", "bio", "image")
+        read_only_fields = ["username"]
+
+    def get_image(self, obj) -> Any:  # type: ignore[no-untyped-def]
+        request = self.context.get("request")
+        image_url = obj.image.url
+        return request.build_absolute_uri(image_url)  # type: ignore[union-attr]
