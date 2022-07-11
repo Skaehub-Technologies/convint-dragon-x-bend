@@ -1,12 +1,21 @@
 from typing import Any
 
 from django.contrib.auth import get_user_model
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from app.user.models import Profile
+from app.user.token import account_activation_token
+from app.user.validators import (
+    validate_password_digit,
+    validate_password_lowercase,
+    validate_password_symbol,
+    validate_password_uppercase,
+)
 from speaksfer.settings.base import EMAIL_USER
 
 User = get_user_model()
@@ -17,6 +26,7 @@ class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=20,
         min_length=8,
+        validators=[UniqueValidator(queryset=User.objects.all())],
     )
 
     email = serializers.EmailField(
@@ -28,23 +38,32 @@ class UserSerializer(serializers.ModelSerializer):
         max_length=128,
         min_length=8,
         write_only=True,
+        validators=[
+            validate_password_digit,
+            validate_password_uppercase,
+            validate_password_symbol,
+            validate_password_lowercase,
+        ],
     )
 
     class Meta:
         model = User
-        fields = ("id", "email", "username", "password")
-
-    # def validate(self, data):
-
-    #     if data['password'] != data['confirm_password']:
-    #         raise serializers.ValidationError("Passwords do not match")
-    #     return data
+        fields = ("email", "username", "password")
 
     @staticmethod
-    def send_email(user: Any) -> None:
+    def send_email(user: Any, request: Any) -> None:
+
+        current_site_info = get_current_site(request)
         email_body = render_to_string(
-            "email_verification.html", {"user": user}
+            "email_verification.html",
+            {
+                "user": user,
+                "domain": current_site_info.domain,
+                "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                "token": account_activation_token.make_token(user),
+            },
         )
+
         send_mail(
             "Verify  your email!",
             email_body,
@@ -54,30 +73,44 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data: Any) -> Any:
+        request = self.context.get("request")
         user = User.objects.create_user(**validated_data)
-        profile_instance = Profile.objects.create(user=user)  # noqa F841
-        self.send_email(user)
+        self.send_email(user, request)
 
         return user
 
 
-class ProfileSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source="user.username")
-    bio = serializers.CharField(allow_blank=True, required=False)
-    image = serializers.SerializerMethodField()
+class VerifyEmailSerializer(serializers.Serializer):
+    token = serializers.CharField()
+    uidb64 = serializers.CharField()
 
     class Meta:
-        model = Profile
-        fields = ("username", "bio", "image")
-        read_only_fields = ["username"]
+        fields = ("token", "uidb64")
 
-    def get_image(self, obj) -> Any:  # type: ignore
-        request = self.context.get("request")
-        image_url = obj.image.url
-        return request.build_absolute_uri(image_url)  # type: ignore
+    def validate(self, data: Any) -> Any:
+        user = None
+        try:
+            user_id = force_str(urlsafe_base64_decode(data.get("uidb64")))
+            user = User.objects.get(pk=user_id)
 
-    # def create(self, validated_data):
-    #     user_data = validated_data.pop('user')
-    #     user_instance = User.objects.create(**user_data)
-    #     profile_instance = Profile.objects.create(user=user_instance, **validated_data)
-    #     return profile_instance
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            raise serializers.ValidationError(
+                "Invalid user id", code="invalid_code"
+            )
+
+        token = data.get("token")
+        if user and account_activation_token.check_token(user, token):
+            return data
+
+        raise serializers.ValidationError(
+            "Invalid or expired token", code="invalid_token"
+        )
+
+    def save(self, **kwargs: Any) -> Any:
+        user_id = force_str(
+            urlsafe_base64_decode(self.validated_data.get("uidb64"))
+        )
+        user = User.objects.get(pk=user_id)
+        user.is_verified = True
+        user.save()
+        return user
