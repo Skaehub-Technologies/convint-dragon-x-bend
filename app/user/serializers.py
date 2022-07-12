@@ -1,42 +1,39 @@
 from typing import Any
+
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from app.user.models import UserFollowing
-from django.utils.http import urlsafe_base64_decode
 from rest_framework.authtoken.models import Token
+
+from app.user.models import UserFollowing
 
 User = get_user_model()
 
-class CheckUserFollowingSerializer(serializers.Serializer):
 
+class CheckFollowingSerializer(serializers.Serializer):
     class Meta:
         model = UserFollowing
-        fields = ("id", "following", "follower")
+        fields = ("id", "followed", "follower")
 
-    def validate(self, data: Any) -> Any:
-        
-        following = data.get("following")
+    def validate(self, data: Any) -> Any:  
+
+        followed = data.get("followed")
         follower = data.get("follower")
-        url_kwargs = self.context.get("kwargs")
-        encoded_pk = url_kwargs.get("encoded_pk")  # type: ignore[union-attr]
 
-        if following is None or follower is None:
-            raise serializers.ValidationError("Must follow a user.")
-        pk = urlsafe_base64_decode(encoded_pk).decode()
-
-        user = User.objects.get(pk=pk)
-        if following == follower:
-            raise serializers.ValidationError(
-                {"detail": "You cannot follow this user."}
-            )
-        user.save()
+        if followed is None or follower is None:  
+            raise serializers.ValidationError("Follow users.")
+        else:
+            if followed == follower:  
+                raise serializers.ValidationError(
+                    {"detail": "You cannot follow this user."}
+                )
         return data
+
 
 class UserFollowingSerializer(serializers.ModelSerializer):
 
     following = serializers.SerializerMethodField()
     followers = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = User
         fields = (
@@ -46,25 +43,27 @@ class UserFollowingSerializer(serializers.ModelSerializer):
             "followers",
         )
 
-    def get_following(self, obj: Any)-> Any:
+    def get_following(self, obj: Any) -> Any:
         return FollowingSerializer(obj.following.all(), many=True).data
 
-    def get_followers(self, obj: Any)-> Any:
+    def get_followers(self, obj: Any) -> Any:
         return FollowersSerializer(obj.followers.all(), many=True).data
 
-    def create(self, validated_data: Any)-> Any:
-        user = User.objects.create_user(**validated_data)  
-        Token.objects.create(user=user) 
-        return user    
+    def create(self, validated_data: Any) -> Any:
+        user = User.objects.create_user(**validated_data)
+        Token.objects.create(user=user)
+        return user
+
 
 class FollowingSerializer(serializers.ModelSerializer):
-
+    username = serializers.ReadOnlyField(source="follower.username")
     class Meta:
         model = UserFollowing
-        fields = ("id", "following", "username", "created_at")
+        fields = ("id", "username", "created_at")
+
 
 class FollowersSerializer(serializers.ModelSerializer):
-
+    username = serializers.ReadOnlyField(source="following.username")
     class Meta:
         model = UserFollowing
-        fields = ("id", "follower", "username", "created_at")
+        fields = ("id", "username", "created_at")

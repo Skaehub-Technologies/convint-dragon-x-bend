@@ -92,16 +92,23 @@ class Profile(models.Model):
     image = models.URLField(blank=True)
     bio = models.TextField(blank=True)
 
+
 class UserFollowing(TimeStampedModel):
-    following = models.ForeignKey("User", related_name="following", on_delete = models.CASCADE)
-    follower = models.ForeignKey("User", related_name="followers", on_delete = models.CASCADE) 
+    following = models.ForeignKey(
+        "User", related_name="following", on_delete=models.CASCADE
+    )
+    follower = models.ForeignKey(
+        "User", related_name="followers", on_delete=models.CASCADE
+    )
+
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['following','follower'],  name="unique_followers")
+            models.UniqueConstraint(
+                fields=["following", "follower"], name="unique_followers"
+            )
         ]
 
         ordering = ["-created_at"]
 
-    def __str__(self)-> str:
-     return f"{self.follower.username} follows {self.following.username}"
-
+    def __str__(self) -> str:
+        return f"{self.follower.username} follows {self.following.username}"

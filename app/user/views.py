@@ -1,13 +1,22 @@
-from rest_framework import generics
-from django.contrib.auth import get_user_model
-from rest_framework import generics, status
-from rest_framework.response import Response
 from typing import Any
-from .serializers import UserFollowingSerializer, CheckUserFollowingSerializer
+
+from django.contrib.auth import get_user_model
+from django.http import Http404
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .serializers import CheckFollowingSerializer, UserFollowingSerializer
 
 User = get_user_model()
 
-class UserFollow(generics.GenericAPIView):
+
+class UserFollowView(APIView):
+    def get_object(self, pk: Any) -> Any:
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            raise Http404
 
     def get(self, request: Any, pk: Any, format: Any = None) -> Any:
         user = self.get_object(pk)
@@ -17,12 +26,13 @@ class UserFollow(generics.GenericAPIView):
     def post(self, request: Any, pk: Any, format: Any = None) -> Any:
         user = request.user
         follow = self.get_object(pk)
-        serializer = CheckUserFollowingSerializer(
-            data={"following": user.id, "follower": follow.id}
+        serializer = CheckFollowingSerializer(
+            data={"following": user.id, "follower": user.id}
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         serializer = UserFollowingSerializer(follow)
-        return Response(serializer.data, status=status.HTTP_200_OK)    
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-   
+    def unfollow(self, request, pk):
+         return Response({'message': 'you are no longer following him'}, status=status.HTTP_200_OK)    
