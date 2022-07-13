@@ -12,23 +12,21 @@ User = get_user_model()
 class CheckFollowingSerializer(serializers.Serializer):
     class Meta:
         model = UserFollowing
-        fields = ("id", "followed", "follower")
+        fields = ("id", "following", "followers")
 
-    def validate(self, data: Any) -> Any:  
+    def validate(self, data: Any) -> Any:
 
-        followed = data.get("followed")
-        follower = data.get("follower")
+        followed = data.get("following")
+        follower = data.get("followers")
 
-        if followed is None or follower is None:  
+        if followed is None or follower is None:
             raise serializers.ValidationError("Follow users.")
         else:
-            if followed == follower:  
+            if followed == follower:
                 raise serializers.ValidationError(
                     {"detail": "You cannot follow this user."}
                 )
         return data
-
-
 class UserFollowingSerializer(serializers.ModelSerializer):
 
     following = serializers.SerializerMethodField()
@@ -54,16 +52,17 @@ class UserFollowingSerializer(serializers.ModelSerializer):
         Token.objects.create(user=user)
         return user
 
-
 class FollowingSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source="follower.username")
+
     class Meta:
         model = UserFollowing
-        fields = ("id", "username", "created_at")
+        fields = ( "username", "created_at")
 
 
 class FollowersSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source="following.username")
+
     class Meta:
         model = UserFollowing
-        fields = ("id", "username", "created_at")
+        fields = ( "username", "created_at")

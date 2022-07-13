@@ -31,8 +31,11 @@ class UserFollowView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        serializer = UserFollowingSerializer(follow)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        user_serializer = UserFollowingSerializer(follow)
+        return Response(user_serializer.data, status=status.HTTP_200_OK)
 
-    def unfollow(self, request, pk):
-         return Response({'message': 'you are no longer following him'}, status=status.HTTP_200_OK)    
+    def unfollow(self, request: Any, pk: Any, format: Any = None) -> Any:
+        return Response(
+            {"message": "you are no longer following him"},
+            status=status.HTTP_200_OK,
+        )
