@@ -27,6 +27,8 @@ class CheckFollowingSerializer(serializers.Serializer):
                     {"detail": "You cannot follow this user."}
                 )
         return data
+
+
 class UserFollowingSerializer(serializers.ModelSerializer):
 
     following = serializers.SerializerMethodField()
@@ -52,12 +54,13 @@ class UserFollowingSerializer(serializers.ModelSerializer):
         Token.objects.create(user=user)
         return user
 
+
 class FollowingSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source="follower.username")
 
     class Meta:
         model = UserFollowing
-        fields = ( "username", "created_at")
+        fields = ("username", "created_at")
 
 
 class FollowersSerializer(serializers.ModelSerializer):
@@ -65,4 +68,4 @@ class FollowersSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserFollowing
-        fields = ( "username", "created_at")
+        fields = ("username", "created_at")
