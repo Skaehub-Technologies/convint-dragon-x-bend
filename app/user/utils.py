@@ -40,7 +40,7 @@ def create_reset_email(
 ) -> dict:
     current_site = get_current_site(request).domain
     reset_url = reverse(
-        "reset-password",
+        "verify-password-reset",
         kwargs={"encoded_pk": encoded_pk, "token": token},
     )
     absurl = f"http://{current_site}{reset_url}"

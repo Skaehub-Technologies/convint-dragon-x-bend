@@ -26,10 +26,11 @@ class PasswordResetSerializer(serializers.Serializer):
         if user:
             email_data = create_reset_email(request, *user)
             send_email("password_reset.html", email_data)
+
         return super().validate(attrs)
 
 
-class ResetPasswordSerializer(serializers.Serializer):
+class VerifyPasswordResetSerializer(serializers.Serializer):
 
     password = serializers.CharField(
         write_only=True,
@@ -48,10 +49,19 @@ class ResetPasswordSerializer(serializers.Serializer):
         encoded_pk = url_kwargs.get("encoded_pk")  # type: ignore[union-attr]
 
         if token is None or encoded_pk is None:
-            raise serializers.ValidationError("Missing data.")
+            raise serializers.ValidationError(
+                {"detail": "This field is required"}
+            )
+        try:
 
-        pk = urlsafe_base64_decode(encoded_pk).decode()
-        user = User.objects.get(pk=pk)
+            pk = urlsafe_base64_decode(encoded_pk).decode()
+            user = User.objects.get(pk=pk)
+
+        except Exception:
+            raise serializers.ValidationError(
+                {"detail": "The encoded_pk is invalid"}
+            )
+
         if not PasswordResetTokenGenerator().check_token(user, token):
             raise serializers.ValidationError(
                 {"detail": "The reset token is invalid"}

@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from app.user.views import PasswordReset, ResetPasswordAPI
+from app.user.views import PasswordReset, VerifyPasswordReset
 
 urlpatterns = [
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
@@ -12,11 +12,11 @@ urlpatterns = [
     path(
         "password-reset/",
         PasswordReset.as_view(),
-        name="request-password-reset",
+        name="password-reset",
     ),
     path(
-        "request-password-reset/<str:encoded_pk>/<str:token>/",
-        ResetPasswordAPI.as_view(),
-        name="reset-password",
+        "verify-password-reset/<str:encoded_pk>/<str:token>/",
+        VerifyPasswordReset.as_view(),
+        name="verify-password-reset",
     ),
 ]

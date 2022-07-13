@@ -5,7 +5,7 @@ from rest_framework import generics, response, status
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from .serializers import PasswordResetSerializer, ResetPasswordSerializer
+from .serializers import PasswordResetSerializer, VerifyPasswordResetSerializer
 
 User = get_user_model()
 
@@ -29,9 +29,9 @@ class PasswordReset(generics.GenericAPIView):
         )
 
 
-class ResetPasswordAPI(generics.GenericAPIView):
+class VerifyPasswordReset(generics.GenericAPIView):
 
-    serializer_class = ResetPasswordSerializer
+    serializer_class = VerifyPasswordResetSerializer
 
     def post(self, request: Any, *args: Any, **kwargs: Any) -> Any:
         """
