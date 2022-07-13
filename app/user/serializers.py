@@ -2,7 +2,6 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from rest_framework.authtoken.models import Token
 
 from app.user.models import UserFollowing
 
@@ -48,11 +47,6 @@ class UserFollowingSerializer(serializers.ModelSerializer):
 
     def get_followers(self, obj: Any) -> Any:
         return FollowersSerializer(obj.followers.all(), many=True).data
-
-    def create(self, validated_data: Any) -> Any:
-        user = User.objects.create_user(**validated_data)
-        Token.objects.create(user=user)
-        return user
 
 
 class FollowingSerializer(serializers.ModelSerializer):
