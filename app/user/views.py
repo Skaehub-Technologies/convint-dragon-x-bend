@@ -1,9 +1,9 @@
 from typing import Any
 
 from django.contrib.auth import get_user_model
-from django.http import Http404
 from rest_framework import status
 from rest_framework.response import Response
+from .models import UserFollowing
 from rest_framework.views import APIView
 
 from .serializers import CheckFollowingSerializer, UserFollowingSerializer
@@ -13,10 +13,8 @@ User = get_user_model()
 
 class UserFollowView(APIView):
     def get_object(self, pk: Any) -> Any:
-        try:
-            return User.objects.get(pk=pk)
-        except User.DoesNotExist:
-            raise Http404
+
+        return User.objects.get(pk=pk)
 
     def get(self, request: Any, pk: Any, format: Any = None) -> Any:
         user = self.get_object(pk)
@@ -34,8 +32,14 @@ class UserFollowView(APIView):
         user_serializer = UserFollowingSerializer(follow)
         return Response(user_serializer.data, status=status.HTTP_200_OK)
 
-    def unfollow(self, request: Any, pk: Any, format: Any = None) -> Any:
+    def delete(self, request: Any, pk: Any, format: Any = None) -> Any:
+        user = request.user
+        follow = self.get_object(pk)
+        UserFollowing.objects.filter(following = user,
+        follower = follow).delete()
         return Response(
-            {"message": "you are no longer following him"},
+            {
+                "message": "you are no longer following this user",
+            },
             status=status.HTTP_200_OK,
         )
