@@ -52,7 +52,7 @@ class VerifyPasswordResetSerializer(serializers.Serializer):
 
     class Meta:
 
-        fields = ["password" , "encoded_pk", "token"]
+        fields = ["password", "encoded_pk", "token"]
 
     def validate(self, data: Any) -> Any:
 
