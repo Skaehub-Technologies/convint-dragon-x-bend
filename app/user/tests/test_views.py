@@ -70,12 +70,12 @@ class TestPasswordReset(TestCase):
         )
 
         response = self.client.post(
-            reset_url, data={"password": "mypassword"}, format="json"
+            reset_url, data={"password": fake.password()}, format="json"
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(
-            "The reset token is invalid", str(response.data["detail"])  # type: ignore[attr-defined]
+            "The reset token is invalid", str(response.data)  # type: ignore[attr-defined]
         )
 
     def test_verify_password_reset_wrong_encoded_pk(self) -> None:
@@ -85,12 +85,12 @@ class TestPasswordReset(TestCase):
         )
 
         response = self.client.post(
-            reset_url, data={"password": "mypassword"}, format="json"
+            reset_url, data={"password": fake.password()}, format="json"
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(
-            "The encoded_pk is invalid", str(response.data["detail"])  # type: ignore[attr-defined]
+            "The encoded_pk is invalid", str(response.data)  # type: ignore[attr-defined]
         )
 
     def test_invalid_user_id(self) -> None:
@@ -105,3 +105,4 @@ class TestPasswordReset(TestCase):
         resp = self.client.post(reset_url)
         self.assertEqual(resp.status_code, 400)
         self.assertIn("This field is required", str(resp.data))  # type: ignore[attr-defined]
+  

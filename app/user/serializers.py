@@ -7,6 +7,13 @@ from rest_framework import serializers
 
 from app.user.utils import create_reset_email, generate_reset_token, send_email
 
+from .validators import (
+    validate_password_digit,
+    validate_password_lowercase,
+    validate_password_symbol,
+    validate_password_uppercase,
+)
+
 User = get_user_model()
 
 
@@ -35,11 +42,17 @@ class VerifyPasswordResetSerializer(serializers.Serializer):
     password = serializers.CharField(
         write_only=True,
         min_length=6,
+        validators=[
+            validate_password_digit,
+            validate_password_uppercase,
+            validate_password_symbol,
+            validate_password_lowercase,
+        ],
     )
 
     class Meta:
 
-        fields = ["password"]
+        fields = ["password" , "encoded_pk", "token"]
 
     def validate(self, data: Any) -> Any:
 
@@ -48,10 +61,6 @@ class VerifyPasswordResetSerializer(serializers.Serializer):
         token = url_kwargs.get("token")  # type: ignore[union-attr]
         encoded_pk = url_kwargs.get("encoded_pk")  # type: ignore[union-attr]
 
-        if token is None or encoded_pk is None:
-            raise serializers.ValidationError(
-                {"detail": "This field is required"}
-            )
         try:
 
             pk = urlsafe_base64_decode(encoded_pk).decode()
