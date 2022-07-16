@@ -60,3 +60,8 @@ class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
 class UserView(generics.ListAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all()
+
+
+class ProfileView(generics.ListAPIView):
+    serializer_class = ProfileSerializer
+    queryset = Profile.objects.all()

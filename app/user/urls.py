@@ -5,6 +5,7 @@ from rest_framework_simplejwt.views import (
 )
 
 from app.user.views import (
+    ProfileView,
     UserProfileView,
     UserRegister,
     UserView,
@@ -22,4 +23,5 @@ urlpatterns = [
     ),
     path("profile/<user>/", UserProfileView.as_view(), name="profile"),
     path("users/", UserView.as_view(), name="users"),
+    path("profiles/", ProfileView.as_view(), name="profiles"),
 ]

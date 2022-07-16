@@ -91,8 +91,8 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
 
 class Profile(models.Model):
     user = models.OneToOneField("user.User", on_delete=models.CASCADE)
-    image = models.ImageField(upload_to="images/", blank=True)
-    bio = models.TextField(blank=True)
+    image = models.ImageField(upload_to="images/", blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
 
     def __str__(self) -> str:
         return self.user.username
