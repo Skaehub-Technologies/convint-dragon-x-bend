@@ -1,45 +1,73 @@
 from typing import Any
 
 from django.contrib.auth import get_user_model
-from rest_framework import status
 from rest_framework.response import Response
-from .models import UserFollowing
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from .serializers import FollowUnfollowSerializer, ProfileSerializer, FollowUnfollowSerializerSorted
+from .models import Profile, FollowUnfollow
 
-from .serializers import CheckFollowingSerializer, UserFollowingSerializer
 
 User = get_user_model()
+class ProfileDetails(APIView):
+    def get(self, request):
+        profile = Profile.objects.all()
+        serializer = ProfileSerializer(profile, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = ProfileSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+        return Response("Profile successfully created")
 
 
-class UserFollowView(APIView):
-    def get_object(self, pk: Any) -> Any:
+# This class is used for fetch individual profile by using id.
+class ViewsProfile(APIView):
+    def get(self, request, pk):
+        profile = Profile.objects.get(id=pk)
+        serializer = ProfileSerializer(profile)
+        return Response(serializer.data)
 
-        return User.objects.get(pk=pk)
+# This class is used for follow a profile.
+class FollowProfile(APIView):
+    def post(self, request, user_pk, profile_pk):
+        check_follow = FollowUnfollow.objects.filter(user_id=user_pk, profile=profile_pk, follow_status='follow')
+        if not check_follow:
+            serializer = FollowUnfollowSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+            return Response("Successfully followed")
+        else:
+            return Response("You are already followed the user")
 
-    def get(self, request: Any, pk: Any, format: Any = None) -> Any:
-        user = self.get_object(pk)
-        serializer = UserFollowingSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def post(self, request: Any, pk: Any, format: Any = None) -> Any:
-        user = request.user
-        follow = self.get_object(pk)
-        serializer = CheckFollowingSerializer(
-            data={"following": user.id, "follower": user.id}
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        user_serializer = UserFollowingSerializer(follow)
-        return Response(user_serializer.data, status=status.HTTP_200_OK)
+# This class is used for unfollow a profile.
+class UnFollowProfile(APIView):
+    def post(self, request, user_pk, profile_pk):
+        check_follow = FollowUnfollow.objects.filter(user_id=user_pk, profile=profile_pk, follow_status='follow')
+        if check_follow:
+            check_follow.delete()
+            return Response("Successfully unfollowed")
+        else:
+            return Response("You haven't followed anyone yet")
 
-    def delete(self, request: Any, pk: Any, format: Any = None) -> Any:
-        user = request.user
-        follow = self.get_object(pk)
-        UserFollowing.objects.filter(following = user,
-        follower = follow).delete()
-        return Response(
-            {
-                "message": "you are no longer following this user",
-            },
-            status=status.HTTP_200_OK,
-        )
+
+# This class is used to find all followers of a profile.
+class ViewFollowers(APIView):
+    def get(self, request, pk):
+        fetch_profile = FollowUnfollow.objects.filter(profile=pk, follow_status='follow')
+        if fetch_profile:
+            serializer = FollowUnfollowSerializerSorted(fetch_profile, many=True)
+            return Response(serializer.data)
+        else:
+            return Response("You don't have followers")
+
+
+# This class is used to find all followings of a user.
+class ViewFollowings(APIView):
+    def get(self, request, pk):
+        fetch_user = User.objects.get(id=pk)
+        following_user = fetch_user.followunfollow_set.all()
+        serializer = FollowUnfollowSerializerSorted(following_user, many=True)
+        return Response(serializer.data)

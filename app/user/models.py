@@ -86,29 +86,21 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     REQUIRED_FIELDS = ["username", "password"]
     USERNAME_FIELD = "email"
 
-
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    image = models.URLField(blank=True)
-    bio = models.TextField(blank=True)
-
-
-class UserFollowing(TimeStampedModel):
-    following = models.ForeignKey(
-        "User", related_name="following", on_delete=models.CASCADE
-    )
-    follower = models.ForeignKey(
-        "User", related_name="followers", on_delete=models.CASCADE
-    )
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["following", "follower"], name="unique_followers"
-            )
-        ]
-
-        ordering = ["-created_at"]
+    user = models.OneToOneField("user.User", on_delete=models.CASCADE)
+    image = models.ImageField(upload_to="images/", blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
 
     def __str__(self) -> str:
-        return f"{self.follower.username} follows {self.following.username}"
+        return self.user.username
+class FollowUnfollow(models.Model):
+    Follow = (
+        ('follow', 'Follow'),
+        ('unfollow', 'Unfollow')
+    )
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    follow_status = models.CharField(max_length=25, choices=Follow)
+
+    def __str__(self):
+        return self.follow_status
