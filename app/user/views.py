@@ -1,5 +1,3 @@
-from typing import Any
-
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -31,8 +29,8 @@ class ViewsProfile(APIView):
 
 # This class is used for follow a profile.
 class FollowProfile(APIView):
-    def post(self, request, user_pk, profile_pk):
-        check_follow = FollowUnfollow.objects.filter(user_id=user_pk, profile=profile_pk, follow_status='follow')
+    def post(self, request, user_pk):
+        check_follow = FollowUnfollow.objects.filter(user_id=user_pk, follow_status='follow')
         if not check_follow:
             serializer = FollowUnfollowSerializer(data=request.data)
             if serializer.is_valid():
@@ -44,8 +42,8 @@ class FollowProfile(APIView):
 
 # This class is used for unfollow a profile.
 class UnFollowProfile(APIView):
-    def post(self, request, user_pk, profile_pk):
-        check_follow = FollowUnfollow.objects.filter(user_id=user_pk, profile=profile_pk, follow_status='follow')
+    def post(self, request, user_pk):
+        check_follow = FollowUnfollow.objects.filter(user_id=user_pk ,follow_status='follow')
         if check_follow:
             check_follow.delete()
             return Response("Successfully unfollowed")

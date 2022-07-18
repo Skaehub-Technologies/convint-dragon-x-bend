@@ -1,5 +1,4 @@
 from typing import Any, Literal
-
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -7,8 +6,8 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
 from app.abstract import TimeStampedModel
+from hashid_field import HashidAutoField
 
 
 class UserManager(BaseUserManager):
@@ -55,6 +54,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
+    id = HashidAutoField(primary_key=True, alphabet="0123456789abcdef")
     username = models.CharField(
         _("username"),
         max_length=150,

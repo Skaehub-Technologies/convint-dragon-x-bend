@@ -12,6 +12,7 @@ djangorestframework = "*"
 markdown = "*"
 django-filter = "*"
 djangorestframework-simplejwt = "*"
+django-hashid-field = "*"
 
 [dev-packages]
 pre-commit = "*"
