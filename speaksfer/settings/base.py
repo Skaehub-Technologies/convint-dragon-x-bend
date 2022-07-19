@@ -44,11 +44,13 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Third party imports
-    "app.user",
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "rest_framework.authtoken",
+    "drf_yasg",
+    # App imports
+    "app.user",
 ]
 
 AUTH_USER_MODEL = "user.User"
