@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "rest_framework.authtoken",
+    "cloudinary",
     "drf_yasg",
     # App imports
     "app.user",
@@ -160,3 +161,12 @@ EMAIL_HOST_PASSWORD = config("SENDGRID_API_KEY", "")
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USER = config("EMAIL_USER", "")
+
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": "devowino",
+    "API_KEY": "114271125926722",
+    "API_SECRET": "ICfDZuf3N8F3y435FLE7rNYJx3g",
+}
+
+
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
