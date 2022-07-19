@@ -47,7 +47,12 @@ class VerifyEmailView(GenericAPIView):
         return Response("Email verified", status=status.HTTP_200_OK)
 
 
-class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
+class UserView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+
+
+class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (
         IsAuthenticated,
         IsUser,
@@ -57,11 +62,6 @@ class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Profile.objects.all()
 
 
-class UserView(generics.ListAPIView):
-    serializer_class = UserSerializer
-    queryset = User.objects.all()
-
-
-class ProfileView(generics.ListAPIView):
+class ProfileListView(generics.ListAPIView):
     serializer_class = ProfileSerializer
     queryset = Profile.objects.all()

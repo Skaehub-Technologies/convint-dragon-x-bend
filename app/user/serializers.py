@@ -76,6 +76,7 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data: Any) -> Any:
         request = self.context.get("request")
         user = User.objects.create_user(**validated_data)
+        Profile.objects.create(user=user)
         self.send_email(user, request)
 
         return user
@@ -117,17 +118,35 @@ class VerifyEmailSerializer(serializers.Serializer):
         return user
 
 
+# class ProfileSerializer(serializers.ModelSerializer):
+#     username = serializers.CharField(source="user.username")
+#     bio = serializers.CharField(allow_blank=True, required=False)
+#     image = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = Profile
+#         fields = ("username", "bio", "image")
+#         read_only_fields = ["username"]
+
+#     def get_image(self, obj) -> Any:  # type: ignore[no-untyped-def]
+#         request = self.context.get("request")
+#         image_url = obj.image.url
+#         return request.build_absolute_uri(image_url)  # type: ignore[union-attr]
+
+
 class ProfileSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source="user.username")
+    username: Any = serializers.CharField(
+        read_only=True, source="user.username"
+    )
     bio = serializers.CharField(allow_blank=True, required=False)
-    image = serializers.SerializerMethodField()
+    image = serializers.ImageField(use_url=True, required=False)
 
     class Meta:
         model = Profile
         fields = ("username", "bio", "image")
-        read_only_fields = ["username"]
 
-    def get_image(self, obj) -> Any:  # type: ignore[no-untyped-def]
-        request = self.context.get("request")
-        image_url = obj.image.url
-        return request.build_absolute_uri(image_url)  # type: ignore[union-attr]
+    def update(self, instance: Any, validated_data: Any) -> Any:
+        instance.bio = validated_data.get("bio", instance.bio)
+        instance.image = validated_data.get("image", instance.image)
+        instance.save()
+        return instance

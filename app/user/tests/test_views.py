@@ -1,15 +1,21 @@
 from typing import Any
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.test import TestCase
+from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from faker import Faker
 from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
 
+from app.user.models import Profile
 from app.user.token import account_activation_token
+
+from .mocks import test_image, test_user
 
 User = get_user_model()
 fake = Faker()
@@ -99,3 +105,42 @@ class UserRegisterViewsTest(TestCase):
 
         self.assertEqual(resp.status_code, 400)
         self.assertIn("Invalid or expired token", str(resp.data))  # type: ignore[attr-defined]
+
+
+class ProfileTest(APITestCase):
+    def setUp(self) -> None:
+        self.user_test = User.objects.create_user(**test_user)
+
+        self.client = APIClient()
+
+    @patch(
+        "cloudinary.uploader.upload_resource", return_value=fake.image_url()
+    )
+    def test_profile_update(self, upload_resource: None) -> None:
+        Profile.objects.create(user=self.user_test)
+        login_url = reverse("login")
+        res = self.client.post(
+            login_url,
+            data={
+                "email": test_user["email"],
+                "password": test_user["password"],
+            },
+            format="json",
+        )
+        data = {
+            "bio": "Do I function",
+            "image": test_image,
+        }
+        url = reverse("profile", kwargs={"user": self.user_test.id})
+        self.client.defaults[
+            "HTTP_AUTHORIZATION"
+        ] = f"Bearer {res.data['access']}"
+        response = self.client.patch(
+            url,
+            data=encode_multipart(data=data, boundary=BOUNDARY),
+            content_type=MULTIPART_CONTENT,
+            enctype="multipart/form-data",
+        )
+
+        self.assertTrue(upload_resource.called)  # type: ignore[attr-defined]
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

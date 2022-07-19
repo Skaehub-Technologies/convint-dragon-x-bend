@@ -1,5 +1,6 @@
 from typing import Any, Literal
 
+from cloudinary.models import CloudinaryField
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -90,9 +91,10 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
 
 
 class Profile(models.Model):
-    user = models.OneToOneField("user.User", on_delete=models.CASCADE)
-    image = models.ImageField(upload_to="images/", blank=True, null=True)
-    bio = models.TextField(blank=True, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    image = CloudinaryField("image")
+    # image = models.ImageField(upload_to="images/", blank=True, null=True)
+    bio = models.TextField(blank=True)
 
     def __str__(self) -> str:
         return self.user.username

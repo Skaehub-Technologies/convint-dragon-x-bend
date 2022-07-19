@@ -15,6 +15,7 @@ drf-yasg = "1.20.0"
 djangorestframework-simplejwt = "5.2.0"
 django-hashid-field = "3.3.5"
 cloudinary = "1.29.0"
+pillow = "*"
 
 [dev-packages]
 pre-commit = "2.19.0"

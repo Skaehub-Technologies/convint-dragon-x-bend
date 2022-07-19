@@ -1,10 +1,14 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from faker import Faker
+
+from app.user.models import Profile
 
 User = get_user_model()
+fake = Faker()
 
 
-class UserModelTest(TestCase):
+class TestUserModel(TestCase):
     """Testing models"""
 
     # Testing user
@@ -104,3 +108,19 @@ class UserModelTest(TestCase):
                 is_staff=True,
                 is_superuser=False,
             )
+
+
+class TestProfileModel(TestCase):
+    """
+    Testing profile
+    """
+
+    def test_profile(self) -> None:
+        user = User.objects.create_user(
+            username=fake.name(),
+            email=fake.email(),
+            password=fake.password(),
+        )
+        profile = Profile.objects.create(user=user)
+
+        self.assertEqual(str(profile), user.username)
