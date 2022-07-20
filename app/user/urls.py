@@ -21,7 +21,7 @@ urlpatterns = [
         VerifyEmailView.as_view(),
         name="email-verify",
     ),
-    path("profile/<user>/", ProfileDetailView.as_view(), name="profile"),
+    path("profile/<int:user>/", ProfileDetailView.as_view(), name="profile"),
     path("users/", UserView.as_view(), name="users"),
     path("profiles/", ProfileListView.as_view(), name="profiles"),
 ]

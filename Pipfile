@@ -28,7 +28,7 @@ pytest-django = "4.5.2"
 pytest-cov = "3.0.0"
 djangorestframework-stubs = "1.7.0"
 faker = "13.15.0"
-pillow = "*"
+pillow = "9.2.0"
 
 [requires]
 python_version = "3.10"

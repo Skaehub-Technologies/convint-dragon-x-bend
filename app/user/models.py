@@ -92,7 +92,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     image = CloudinaryField("image")
-    bio = models.TextField(blank=True)
+    bio = models.CharField(blank=True, max_length=100, null=True)
 
     def __str__(self) -> str:
         return self.user.username

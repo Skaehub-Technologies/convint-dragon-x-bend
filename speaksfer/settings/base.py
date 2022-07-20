@@ -164,8 +164,8 @@ EMAIL_USER = config("EMAIL_USER", "")
 
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": "devowino",
-    "API_KEY": "114271125926722",
-    "API_SECRET": "ICfDZuf3N8F3y435FLE7rNYJx3g",
+    "API_KEY": config("CLOUDINARY_API_KEY"),
+    "API_SECRET": config("API_SECRET"),
 }
 
 

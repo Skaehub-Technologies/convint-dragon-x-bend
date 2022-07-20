@@ -119,9 +119,7 @@ class VerifyEmailSerializer(serializers.Serializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    username: Any = serializers.CharField(
-        read_only=True, source="user.username"
-    )
+    username = serializers.CharField(read_only=True, source="user.username")
     bio = serializers.CharField(allow_blank=True, required=False)
     image = serializers.ImageField(use_url=True, required=False)
 
