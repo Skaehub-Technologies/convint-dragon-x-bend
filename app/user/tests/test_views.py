@@ -113,13 +113,10 @@ class TestProfileView(APITestCase):
 
         self.client = APIClient()
 
-    @patch(
-        "cloudinary.uploader.upload_resource", return_value=fake.image_url()
-    )
-    def test_profile_update(self, upload_resource: Any) -> None:
-        Profile.objects.create(user=self.user_test)
+    @property
+    def bearer_token(self) -> str:
         login_url = reverse("login")
-        res = self.client.post(
+        response = self.client.post(
             login_url,
             data={
                 "email": test_user["email"],
@@ -127,6 +124,13 @@ class TestProfileView(APITestCase):
             },
             format="json",
         )
+        return response.data.get("access")  # type: ignore[no-any-return]
+
+    @patch(
+        "cloudinary.uploader.upload_resource", return_value=fake.image_url()
+    )
+    def test_profile_update(self, upload_resource: Any) -> None:
+        Profile.objects.create(user=self.user_test)
         data = {
             "bio": "Do I function",
             "image": test_image,
@@ -134,7 +138,7 @@ class TestProfileView(APITestCase):
         url = reverse("profile", kwargs={"user": self.user_test.id})
         self.client.defaults[
             "HTTP_AUTHORIZATION"
-        ] = f"Bearer {res.data['access']}"
+        ] = f"Bearer {self.bearer_token}"
         response = self.client.patch(
             url,
             data=encode_multipart(data=data, boundary=BOUNDARY),
