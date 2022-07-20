@@ -28,6 +28,7 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = False
 
 ALLOWED_HOSTS: List[str] = []
+HASHID_FIELD_SALT = config("HASHID_FIELD_SALT")
 
 
 # Application definition

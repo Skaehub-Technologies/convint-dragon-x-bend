@@ -41,7 +41,7 @@ class VerifyPasswordResetSerializer(serializers.Serializer):
 
     password = serializers.CharField(
         write_only=True,
-        min_length=6,
+        min_length=8,
         validators=[
             validate_password_digit,
             validate_password_uppercase,
