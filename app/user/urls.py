@@ -1,12 +1,33 @@
 from django.urls import path
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
-from . import views
+from app.user.views import (
+    FollowProfile,
+    ProfileDetailView,
+    ProfileListView,
+    UserRegister,
+    UserView,
+    VerifyEmailView,
+    UnFollowProfile,
+    FollowProfile,
+)
 
 urlpatterns = [
-    path('profile_details/', views.ProfileDetails.as_view(), name='add_profile_details'),
-    path('show_profile/<str:pk>/', views.ViewsProfile.as_view(), name="view_profile"),
-    path('follow_profile/<str:user_pk>/', views.FollowProfile.as_view(), name="follow_profile"),
-    path('unfollow_profile/<str:user_pk>/', views.UnFollowProfile.as_view(), name="unfollow_profile"),
-    path('view_followers/<str:pk>/', views.ViewFollowers.as_view(), name="view_followers"),
-    path('view_followings/<str:pk>/', views.ViewFollowings.as_view(), name="view_followings"),
+    path("login/", TokenObtainPairView.as_view(), name="login"),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("register/", UserRegister.as_view(), name="register"),
+    path(
+        "email-verify/<str:uidb64>/<str:token>/",
+        VerifyEmailView.as_view(),
+        name="email-verify",
+    ),
+    path("profile/<user>/", ProfileDetailView.as_view(), name="profile"),
+    path("users/", UserView.as_view(), name="users"),
+    path("profiles/", ProfileListView.as_view(), name="profiles"),
+    path("follow/", FollowProfile.as_view(), name="follow"),
+    path("unfollow/<str:id>/", UnFollowProfile.as_view(), name="unfollow"),
+
 ]

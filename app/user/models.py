@@ -93,14 +93,31 @@ class Profile(models.Model):
 
     def __str__(self) -> str:
         return self.user.username
-class FollowUnfollow(models.Model):
-    Follow = (
-        ('follow', 'Follow'),
-        ('unfollow', 'Unfollow')
-    )
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    follow_status = models.CharField(max_length=25, choices=Follow)
 
-    def __str__(self):
-        return self.follow_status
+class UserFollowing(models.Model):
+
+    follower = models.ForeignKey(
+        User,
+        related_name="following",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    followed = models.ForeignKey(
+        User,
+        related_name="followers",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["follower", "followed"],
+                name="unique_following",
+            )
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.follower} is following {self.followed}"

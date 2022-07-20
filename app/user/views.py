@@ -1,71 +1,82 @@
+from typing import Any
 from django.contrib.auth import get_user_model
+from rest_framework import generics, status
+from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.response import Response
-from .serializers import FollowUnfollowSerializer, ProfileSerializer, FollowUnfollowSerializerSorted
-from .models import Profile, FollowUnfollow
+from rest_framework_simplejwt.tokens import RefreshToken
 
+from app.user.models import Profile, UserFollowing
+from app.user.permissions import IsUser
+from app.user.serializers import (
+    FollowedSerializer,
+    ProfileSerializer,
+    UserSerializer,
+    VerifyEmailSerializer,
+    UserFollowingSerializer,
+)
+from rest_framework.renderers import JSONRenderer
 
 User = get_user_model()
-class ProfileDetails(APIView):
-    def get(self, request):
-        profile = Profile.objects.all()
-        serializer = ProfileSerializer(profile, many=True)
-        return Response(serializer.data)
+class UserRegister(APIView):
+    def post(self, request: Request, format: str = "json") -> Response:
+        serializer = UserSerializer(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        refresh = RefreshToken.for_user(user)
+        response = serializer.data
+        response["refresh"] = str(refresh)
+        response["access"] = str(refresh.access_token)
 
-    def post(self, request):
-        serializer = ProfileSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-        return Response("Profile successfully created")
-
-
-# This class is used for fetch individual profile by using id.
-class ViewsProfile(APIView):
-    def get(self, request, pk):
-        profile = Profile.objects.get(id=pk)
-        serializer = ProfileSerializer(profile)
-        return Response(serializer.data)
-
-# This class is used for follow a profile.
-class FollowProfile(APIView):
-    def post(self, request, user_pk):
-        check_follow = FollowUnfollow.objects.filter(user_id=user_pk, follow_status='follow')
-        if not check_follow:
-            serializer = FollowUnfollowSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-            return Response("Successfully followed")
-        else:
-            return Response("You are already followed the user")
+        return Response(response, status=status.HTTP_201_CREATED)
 
 
-# This class is used for unfollow a profile.
+class VerifyEmailView(GenericAPIView):
+    serializer_class = VerifyEmailSerializer
+
+    def patch(
+        self, request: Request, uidb64: str, token: str, **kwargs: str
+    ) -> Response:
+        data = {"uidb64": uidb64, "token": token}
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response("Email verified", status=status.HTTP_200_OK)
+
+
+class UserView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+
+class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (
+        IsAuthenticated,
+        IsUser,
+    )
+    serializer_class = ProfileSerializer
+    lookup_field = "user"
+    queryset = Profile.objects.all()
+
+class ProfileListView(generics.ListAPIView):
+    serializer_class = ProfileSerializer
+    queryset = Profile.objects.all()
+
+class FollowProfile(generics.CreateAPIView):
+
+    serializer_class = UserFollowingSerializer
+    permission_classes= [IsAuthenticated]
+    renderer_classes = [JSONRenderer]
+
 class UnFollowProfile(APIView):
-    def post(self, request, user_pk):
-        check_follow = FollowUnfollow.objects.filter(user_id=user_pk ,follow_status='follow')
-        if check_follow:
-            check_follow.delete()
-            return Response("Successfully unfollowed")
-        else:
-            return Response("You haven't followed anyone yet")
-
-
-# This class is used to find all followers of a profile.
-class ViewFollowers(APIView):
-    def get(self, request, pk):
-        fetch_profile = FollowUnfollow.objects.filter(profile=pk, follow_status='follow')
-        if fetch_profile:
-            serializer = FollowUnfollowSerializerSorted(fetch_profile, many=True)
-            return Response(serializer.data)
-        else:
-            return Response("You don't have followers")
-
-
-# This class is used to find all followings of a user.
-class ViewFollowings(APIView):
-    def get(self, request, pk):
-        fetch_user = User.objects.get(id=pk)
-        following_user = fetch_user.followunfollow_set.all()
-        serializer = FollowUnfollowSerializerSorted(following_user, many=True)
-        return Response(serializer.data)
+    def delete(self, data: Any) -> Any:
+        connection = UserFollowing.objects.filter(follower = data.get("user"), followed = data.get("follow"))
+        if connection:
+            connection.delete()
+            return Response("Successfully unfollowed", status= status.HTTP_204_NO_CONTENT)
+        
+        return Response("You haven't followed anyone yet")
