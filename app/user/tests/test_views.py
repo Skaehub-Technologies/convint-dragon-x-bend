@@ -104,6 +104,7 @@ class TestPasswordReset(TestCase):
                 "token": "token",
             },
         )
+
         resp = self.client.post(reset_url)
         self.assertEqual(resp.status_code, 400)
         self.assertIn("This field is required", str(resp.data))  # type: ignore[attr-defined]
