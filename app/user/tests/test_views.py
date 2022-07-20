@@ -107,7 +107,7 @@ class UserRegisterViewsTest(TestCase):
         self.assertIn("Invalid or expired token", str(resp.data))  # type: ignore[attr-defined]
 
 
-class ProfileTest(APITestCase):
+class TestProfileView(APITestCase):
     def setUp(self) -> None:
         self.user_test = User.objects.create_user(**test_user)
 
@@ -116,7 +116,7 @@ class ProfileTest(APITestCase):
     @patch(
         "cloudinary.uploader.upload_resource", return_value=fake.image_url()
     )
-    def test_profile_update(self, upload_resource: None) -> None:
+    def test_profile_update(self, upload_resource: Any) -> None:
         Profile.objects.create(user=self.user_test)
         login_url = reverse("login")
         res = self.client.post(
@@ -142,5 +142,5 @@ class ProfileTest(APITestCase):
             enctype="multipart/form-data",
         )
 
-        self.assertTrue(upload_resource.called)  # type: ignore[attr-defined]
+        self.assertTrue(upload_resource.called)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

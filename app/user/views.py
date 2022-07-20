@@ -52,7 +52,7 @@ class UserView(generics.ListAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all()
     permission_classes = (IsAuthenticated,)
-    renderer_classes = [JSONRenderer]
+    renderer_classes = (JSONRenderer,)
 
 
 class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -63,11 +63,11 @@ class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ProfileSerializer
     lookup_field = "user"
     queryset = Profile.objects.all()
-    renderer_classes = [JSONRenderer]
+    renderer_classes = (JSONRenderer,)
 
 
 class ProfileListView(generics.ListAPIView):
     serializer_class = ProfileSerializer
     queryset = Profile.objects.all()
     permission_classes = (IsAuthenticated,)
-    renderer_classes = [JSONRenderer]
+    renderer_classes = (JSONRenderer,)
