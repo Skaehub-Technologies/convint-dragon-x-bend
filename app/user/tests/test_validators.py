@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+
 from app.user.validators import (
     validate_password_digit,
     validate_password_lowercase,
@@ -7,8 +8,8 @@ from app.user.validators import (
     validate_password_uppercase,
 )
 
-class ValidatorsTest(TestCase):
 
+class ValidatorsTest(TestCase):
     def test_user_password_validator_digit(self) -> None:
         with self.assertRaises(ValidationError):
             validate_password_digit("Kloanda-ka")
