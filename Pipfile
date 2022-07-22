@@ -15,6 +15,7 @@ djangorestframework-simplejwt = "*"
 django-hashid-field = "*"
 faker = "*"
 pillow = "*"
+drf-yasg = "*"
 
 [dev-packages]
 pre-commit = "*"
