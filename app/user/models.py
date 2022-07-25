@@ -1,3 +1,4 @@
+import uuid
 from typing import Any, Literal
 
 from cloudinary.models import CloudinaryField
@@ -8,7 +9,6 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from hashid_field import HashidAutoField
 
 from app.abstracts import TimeStampedModel
 
@@ -56,7 +56,13 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
-    id = HashidAutoField(primary_key=True, alphabet="0123456789abcdef")
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+        max_length=255,
+    )
     username = models.CharField(
         _("username"),
         max_length=150,

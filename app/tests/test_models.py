@@ -1,7 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.utils.text import slugify
 from faker import Faker
 
+from app.articles.models import Article
 from app.user.models import Profile
 
 User = get_user_model()
@@ -124,3 +126,36 @@ class TestProfileModel(TestCase):
         profile = Profile.objects.create(user=user)
 
         self.assertEqual(str(profile), user.username)
+
+
+class TestArticleViews(TestCase):
+    """Testing Articles Model"""
+
+    def setUp(self) -> None:
+        self.data = {
+            "title": fake.name(),
+            "description": fake.text(),
+            "body": fake.text(),
+            "image": fake.image_url(),
+            "favourited": False,
+            "favouritesCount": 0,
+        }
+
+    def test_create_article(self) -> None:
+        article = Article.objects.create(**self.data)
+        self.assertEqual(article.title, self.data["title"])
+        self.assertEqual(article.description, self.data["description"])
+        self.assertEqual(article.body, self.data["body"])
+        self.assertEqual(article.image, self.data["image"])
+        self.assertEqual(article.favourited, self.data["favourited"])
+        self.assertEqual(article.favouritesCount, self.data["favouritesCount"])
+
+    def test_str_article(self) -> None:
+        article = Article.objects.create(**self.data)
+        self.assertEqual(str(article), article.title)
+
+    def test_slug_article(self) -> None:
+        article = Article.objects.create(**self.data)
+        self.assertEqual(
+            article.slug, slugify(f"{article.title}-{article.article_id}")
+        )

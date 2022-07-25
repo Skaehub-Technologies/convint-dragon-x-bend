@@ -24,6 +24,10 @@ User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
 
+    id = serializers.CharField(
+        read_only=True,
+    )
+
     username = serializers.CharField(
         max_length=20,
         min_length=8,
@@ -49,7 +53,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("email", "username", "password")
+        fields = ("id", "email", "username", "password")
 
     @staticmethod
     def send_email(user: Any, request: Any) -> None:

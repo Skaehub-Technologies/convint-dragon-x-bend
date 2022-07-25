@@ -79,7 +79,9 @@ class UserRegisterViewsTest(TestCase):
         link = reverse(
             "email-verify",
             kwargs={
-                "uidb64": urlsafe_base64_encode(force_bytes("300")),
+                "uidb64": urlsafe_base64_encode(
+                    force_bytes("7efcc181-9741-4911-bb0c-e5f670dda1e1")
+                ),
                 "token": account_activation_token.make_token(self.user),
             },
         )

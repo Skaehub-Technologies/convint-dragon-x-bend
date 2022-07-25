@@ -50,8 +50,10 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "cloudinary",
     "drf_yasg",
+    "taggit",
     # App imports
     "app.user",
+    "app.articles",
 ]
 
 AUTH_USER_MODEL = "user.User"
