@@ -42,9 +42,9 @@ class VerifyEmailView(GenericAPIView):
     serializer_class = VerifyEmailSerializer
 
     def patch(
-        self, request: Request, uidb64: str, token: str, **kwargs: str
+        self, request: Request, encoded_pk: str, token: str, **kwargs: str
     ) -> Response:
-        data = {"uidb64": uidb64, "token": token}
+        data = {"encoded_pk": encoded_pk, "token": token}
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -91,7 +91,7 @@ class PasswordReset(generics.GenericAPIView):
         )
         serializer.is_valid(raise_exception=True)
         return Response(
-            {"message": "check your email for password reset link"},
+            {"message": "Check your email for the password reset link"},
             status=status.HTTP_200_OK,
         )
 

@@ -2,24 +2,20 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
 from app.user.models import Profile
 from app.user.token import account_activation_token
-from app.user.utils import create_reset_email, generate_reset_token, send_email
+from app.user.utils import create_email_data, generate_token, send_email
 from app.user.validators import (
     validate_password_digit,
     validate_password_lowercase,
     validate_password_symbol,
     validate_password_uppercase,
 )
-from speaksfer.settings.base import EMAIL_USER
 
 User = get_user_model()
 
@@ -53,48 +49,35 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ("email", "username", "password")
 
-    @staticmethod
-    def send_email(user: Any, request: Any) -> None:
-
-        current_site_info = get_current_site(request)
-        email_body = render_to_string(
-            "email_verification.html",
-            {
-                "user": user,
-                "domain": current_site_info.domain,
-                "uid": urlsafe_base64_encode(force_bytes(user.pk)),
-                "token": account_activation_token.make_token(user),
-            },
-        )
-
-        send_mail(
-            "Verify  your email!",
-            email_body,
-            EMAIL_USER,
-            [user.email],
-            fail_silently=False,
-        )
-
     def create(self, validated_data: Any) -> Any:
-        request = self.context.get("request")
         user = User.objects.create_user(**validated_data)
+        user.save()
         Profile.objects.create(user=user)
-        self.send_email(user, request)
-
+        token_info = generate_token(user)
+        request = self.context.get("request")
+        email_data = create_email_data(
+            request,
+            user,
+            encoded_pk=user,
+            token=token_info,
+            url="email-verify",
+            subject="Verify your email!",
+        )
+        send_email("email_verification.html", email_data)
         return user
 
 
 class VerifyEmailSerializer(serializers.Serializer):
+    encoded_pk = serializers.CharField()
     token = serializers.CharField()
-    uidb64 = serializers.CharField()
 
     class Meta:
-        fields = ("token", "uidb64")
+        fields = ("encoded_pk", "token")
 
     def validate(self, data: Any) -> Any:
         user = None
         try:
-            user_id = force_str(urlsafe_base64_decode(data.get("uidb64")))
+            user_id = force_str(urlsafe_base64_decode(data.get("encoded_pk")))
             user = User.objects.get(pk=user_id)
 
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
@@ -112,7 +95,7 @@ class VerifyEmailSerializer(serializers.Serializer):
 
     def save(self, **kwargs: Any) -> Any:
         user_id = force_str(
-            urlsafe_base64_decode(self.validated_data.get("uidb64"))
+            urlsafe_base64_decode(self.validated_data.get("encoded_pk"))
         )
         user = User.objects.get(pk=user_id)
         user.is_verified = True
@@ -144,13 +127,18 @@ class PasswordResetSerializer(serializers.Serializer):
         fields = ["email"]
 
     def validate(self, attrs: Any) -> Any:
-
-        request = self.context.get("request")
-        email = attrs.get("email")
-        user = generate_reset_token(email)
-
+        user = User.objects.filter(email=attrs["email"]).first()
         if user:
-            email_data = create_reset_email(request, *user)
+            token_info = generate_token(user)
+            request = self.context.get("request")
+            email_data = create_email_data(
+                request,
+                user,
+                encoded_pk=user,
+                token=token_info,
+                url="verify-password-reset",
+                subject="Password Reset!",
+            )
             send_email("password_reset.html", email_data)
 
         return super().validate(attrs)

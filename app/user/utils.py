@@ -26,27 +26,31 @@ def send_email(template: str, email_data: Any) -> None:
     )
 
 
-def generate_reset_token(email: str) -> Any:
+def generate_token(email: str) -> Any:
     if User.objects.filter(email=email).exists():
         user = User.objects.get(email=email)
         encoded_pk = urlsafe_base64_encode(smart_bytes(user.id))
         token = PasswordResetTokenGenerator().make_token(user)
         return (user, encoded_pk, token)
-    return None
 
 
-def create_reset_email(
-    request: Any, user: Any, encoded_pk: str, token: str
+def create_email_data(
+    request: Any,
+    user: Any,
+    encoded_pk: str,
+    token: str,
+    url: str,
+    subject: str,
 ) -> dict:
     current_site = get_current_site(request).domain
     reset_url = reverse(
-        "verify-password-reset",
+        url,
         kwargs={"encoded_pk": encoded_pk, "token": token},
     )
     absurl = f"http://{current_site}{reset_url}"
     body = {"user": user, "link": absurl}
     data = {
-        "subject": "YOUR PASSWORD RESET LINK",
+        "subject": subject,
         "body": body,
         "recipient": user.email,
     }

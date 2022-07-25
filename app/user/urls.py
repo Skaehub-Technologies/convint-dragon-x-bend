@@ -19,7 +19,7 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("register/", UserRegister.as_view(), name="register"),
     path(
-        "email-verify/<str:uidb64>/<str:token>/",
+        "email-verify/<str:encoded_pk>/<str:token>/",
         VerifyEmailView.as_view(),
         name="email-verify",
     ),

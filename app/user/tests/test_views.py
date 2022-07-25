@@ -64,7 +64,7 @@ class UserRegisterViewsTest(TestCase):
         link = reverse(
             "email-verify",
             kwargs={
-                "uidb64": urlsafe_base64_encode(force_bytes(self.user.pk)),
+                "encoded_pk": urlsafe_base64_encode(force_bytes(self.user.pk)),
                 "token": account_activation_token.make_token(self.user),
             },
         )
@@ -80,7 +80,9 @@ class UserRegisterViewsTest(TestCase):
         link = reverse(
             "email-verify",
             kwargs={
-                "uidb64": urlsafe_base64_encode(force_bytes("300")),
+                "encoded_pk": urlsafe_base64_encode(
+                    force_bytes("2573d942-c6b3-4f9c-8e54-04a32ddc175d")
+                ),
                 "token": account_activation_token.make_token(self.user),
             },
         )
@@ -97,7 +99,7 @@ class UserRegisterViewsTest(TestCase):
         link = reverse(
             "email-verify",
             kwargs={
-                "uidb64": urlsafe_base64_encode(force_bytes(self.user.pk)),
+                "encoded_pk": urlsafe_base64_encode(force_bytes(self.user.pk)),
                 "token": "rgtuj54647vhd",
             },
         )
