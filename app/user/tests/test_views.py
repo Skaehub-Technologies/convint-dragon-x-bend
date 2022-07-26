@@ -73,7 +73,7 @@ class UserRegisterViewsTest(TestCase):
 
         self.assertEqual(resp.status_code, 200)
 
-    def test_invalid_user_id(self) -> None:
+    def test_invalid_encoded_pk(self) -> None:
         """
         Test invalid user id
         """
@@ -178,10 +178,9 @@ class TestPasswordReset(TestCase):
     def test_password_reset_none_existing_email(self) -> None:
         url = reverse("password-reset")
         data = {"email": fake.email()}
-        outbox = len(mail.outbox)
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(mail.outbox), outbox + 0)
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_password_reset_no_email(self) -> None:
         url = reverse("password-reset")
