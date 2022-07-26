@@ -129,7 +129,9 @@ class TestProfileModel(TestCase):
 
 
 class TestArticleViews(TestCase):
-    """Testing Articles Model"""
+    """
+    Testing Articles Model
+    """
 
     def setUp(self) -> None:
         self.data = {
@@ -142,6 +144,9 @@ class TestArticleViews(TestCase):
         }
 
     def test_create_article(self) -> None:
+        """
+        Test creation of new article
+        """
         article = Article.objects.create(**self.data)
         self.assertEqual(article.title, self.data["title"])
         self.assertEqual(article.description, self.data["description"])

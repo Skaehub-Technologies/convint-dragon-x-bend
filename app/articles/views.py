@@ -13,12 +13,11 @@ from rest_framework.response import Response
 from app.articles.models import Article
 from app.articles.permissions import AuthorOrReadOnly
 from app.articles.serializers import ArticlesSerializers
-from app.user.permissions import IsUser
 
 
 class ArticleCreateView(generics.CreateAPIView):
     permission_classes = [
-        IsUser,
+        AuthorOrReadOnly,
         IsAuthenticated,
     ]
     lookup_field = "user"
