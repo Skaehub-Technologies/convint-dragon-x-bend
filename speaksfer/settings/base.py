@@ -15,6 +15,8 @@ from pathlib import Path
 from typing import List
 
 import cloudinary
+import cloudinary.api
+import cloudinary.uploader
 import dj_database_url
 from decouple import config
 
@@ -51,7 +53,6 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "cloudinary",
     "drf_yasg",
-    "taggit",
     # App imports
     "app.user",
     "app.articles",
@@ -176,6 +177,3 @@ cloudinary.config(
     api_key=config("CLOUDINARY_API_KEY"),
     api_secret=config("API_SECRET"),
 )
-
-
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"

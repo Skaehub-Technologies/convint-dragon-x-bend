@@ -1,9 +1,7 @@
 import json
-from typing import Any
+from typing import Any, Dict
 from unittest.mock import patch
 
-import cloudinary
-from decouple import config
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core import mail
@@ -20,15 +18,8 @@ from app.articles.models import Article
 from app.user.models import Profile
 from app.user.token import account_activation_token
 
-from .mock import sample_data, sample_image
+from .mock import sample_image
 from .mocks import test_image, test_user
-
-cloudinary.config(
-    cloud_name="devowino",
-    api_key=config("CLOUDINARY_API_KEY"),
-    api_secret=config("API_SECRET"),
-)
-
 
 User = get_user_model()
 fake = Faker()
@@ -40,6 +31,7 @@ class UserRegisterViewsTest(TestCase):
     """
 
     user: Any
+    # data: Dict[str, Any]
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -62,7 +54,7 @@ class UserRegisterViewsTest(TestCase):
         }
 
         response = self.client.post(self.create_url, data, format="json")
-        res_data = response.data  # type: ignore[attr-defined]
+        res_data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(res_data["username"], data["username"])
@@ -133,7 +125,10 @@ class TestProfileView(APITestCase):
         self.client = APIClient()
 
     @property
-    def bearer_token(self) -> str:
+    def bearer_token(self) -> dict:
+        """
+        Authentication function
+        """
         login_url = reverse("login")
         response = self.client.post(
             login_url,
@@ -143,7 +138,8 @@ class TestProfileView(APITestCase):
             },
             format="json",
         )
-        return response.data.get("access")  # type: ignore[no-any-return]
+        token = json.loads(response.content).get("access")
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
 
     @patch(
         "cloudinary.uploader.upload_resource", return_value=fake.image_url()
@@ -158,14 +154,15 @@ class TestProfileView(APITestCase):
             "image": test_image,
         }
         url = reverse("profile", kwargs={"user": self.user_test.id})
-        self.client.defaults[
-            "HTTP_AUTHORIZATION"
-        ] = f"Bearer {self.bearer_token}"
+        # self.client.defaults[
+        #     "HTTP_AUTHORIZATION"
+        # ] = f"Bearer {self.bearer_token}"
         response = self.client.patch(
             url,
             data=encode_multipart(data=data, boundary=BOUNDARY),
             content_type=MULTIPART_CONTENT,
             enctype="multipart/form-data",
+            **self.bearer_token,
         )
 
         self.assertTrue(upload_resource.called)
@@ -206,7 +203,7 @@ class TestPasswordReset(TestCase):
         response = self.client.post(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(
-            "This field may not be null", str(response.data["email"])  # type: ignore[attr-defined]
+            "This field may not be null", str(response.json()["email"])
         )
 
     def test_verify_password_reset_token(self) -> None:
@@ -233,9 +230,7 @@ class TestPasswordReset(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(
-            "The reset token is invalid", str(response.data)  # type: ignore[attr-defined]
-        )
+        self.assertIn("The reset token is invalid", str(response.json()))
 
     def test_verify_password_reset_wrong_encoded_pk(self) -> None:
         reset_url = reverse(
@@ -248,9 +243,7 @@ class TestPasswordReset(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(
-            "The encoded_pk is invalid", str(response.data)  # type: ignore[attr-defined]
-        )
+        self.assertIn("The encoded_pk is invalid", str(response.json()))
 
     def test_invalid_user_id(self) -> None:
 
@@ -267,40 +260,33 @@ class TestPasswordReset(TestCase):
         self.assertIn("This field is required", str(resp.data))  # type: ignore[attr-defined]
 
 
-class TestArticleViews(APITestCase):
-    """
-    Tests for Article App views
-    """
+class TestCreateArticle(TestCase):
+    user: Any
+    article: Any
+    password: str
+    data: Dict[str, Any]
 
     @classmethod
     def setUpClass(cls) -> None:
-        """
-        Data to be used in the tests
-        """
         super().setUpClass()
-        cls.password = fake.password()  # type: ignore[attr-defined]
-        cls.client = APIClient()
-        cls.user = User.objects.create_user(  # type: ignore[attr-defined]
-            username=fake.name(), email=fake.email(), password=cls.password  # type: ignore[attr-defined]
+        cls.password = fake.password()
+        cls.user = User.objects.create_user(
+            username=fake.name(), email=fake.email(), password=cls.password
         )
-        cls.article = Article.objects.create(  # type: ignore[attr-defined]
+        cls.article = Article.objects.create(
             title=fake.name(),
             description=fake.text(),
             body=fake.text(),
             image=sample_image(),
-            taglist=f'["{fake.word()}", "{fake.word()}"]',
-            favourited=False,
-            favouritesCount=0,
-            author=cls.user,  # type: ignore[attr-defined]
+            author=cls.user,
         )
-        cls.data = {  # type: ignore[attr-defined]
+
+        cls.data = {
             "title": fake.texts(nb_texts=2),
             "description": fake.paragraph(nb_sentences=3),
             "body": fake.paragraph(nb_sentences=20),
             "image": sample_image(),
-            "taglist": f'["{fake.word()}", "{fake.word()}"]',
-            "favourited": False,
-            "favouritesCount": 0,
+            "taglist": f"{fake.word()}, {fake.word()}",
         }
 
     @property
@@ -311,7 +297,7 @@ class TestArticleViews(APITestCase):
         login_url = reverse("login")
         response = self.client.post(
             login_url,
-            data={"email": self.user.email, "password": self.password},  # type: ignore[attr-defined]
+            data={"email": self.user.email, "password": self.password},
             format="json",
         )
         token = json.loads(response.content).get("access")
@@ -327,43 +313,21 @@ class TestArticleViews(APITestCase):
         count = Article.objects.count()
         response = self.client.post(
             reverse("create"),
-            data=encode_multipart(data=self.data, boundary=BOUNDARY),  # type: ignore[attr-defined]
-            content_type=MULTIPART_CONTENT,
-            enctype="multipart/form-data",
+            data=self.data,
+            format="json",
             **self.bearer_token,
         )
-        self.assertFalse(upload_resource.called)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(Article.objects.count(), count)
-
-    def test_create_article_without_article(self) -> None:
-        """
-        Test when an article is created without an article
-        """
-        data = sample_data()
-        data.pop("title")
-        count = Article.objects.count()
-        response = self.client.post(
-            reverse("create"),
-            data=encode_multipart(data=data, boundary=BOUNDARY),
-            content_type=MULTIPART_CONTENT,
-            enctype="multipart/form-data",
-            **self.bearer_token,
-        )
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            json.dumps(response.data),
-            '{"title": ["This field is required."]}',
-        )
-        self.assertEqual(Article.objects.count(), count)
+        self.assertTrue(upload_resource.called)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Article.objects.count(), count + 1)
 
     def test_delete_article(self) -> None:
         """
-        Test deletion of an article by the author
+        Test deletion of article by the author
         """
         count = Article.objects.count()
         response = self.client.delete(
-            reverse("article-delete", kwargs={"slug": self.article.slug}),  # type: ignore[attr-defined]
+            reverse("article-delete", kwargs={"slug": self.article.slug}),
             **self.bearer_token,
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -371,11 +335,11 @@ class TestArticleViews(APITestCase):
 
     def test_delete_article_without_authentication(self) -> None:
         """
-        Test deletion of an article by a foreign user
+        Test deletion of article by a foreign user
         """
         count = Article.objects.count()
         response = self.client.delete(
-            reverse("article-delete", kwargs={"slug": self.article.slug})  # type: ignore[attr-defined]
+            reverse("article-delete", kwargs={"slug": self.article.slug}),
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(Article.objects.count(), count)

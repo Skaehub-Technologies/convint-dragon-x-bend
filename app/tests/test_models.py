@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.utils.text import slugify
 from faker import Faker
 
-from app.articles.models import Article
+from app.articles.models import Article, Tag
 from app.user.models import Profile
 
 User = get_user_model()
@@ -128,7 +128,7 @@ class TestProfileModel(TestCase):
         self.assertEqual(str(profile), user.username)
 
 
-class TestArticleViews(TestCase):
+class TestArticleModels(TestCase):
     """
     Testing Articles Model
     """
@@ -162,5 +162,18 @@ class TestArticleViews(TestCase):
     def test_slug_article(self) -> None:
         article = Article.objects.create(**self.data)
         self.assertEqual(
-            article.slug, slugify(f"{article.title}-{article.article_id}")
+            article.slug, slugify(f"{article.title}-{article.post_id}")
         )
+
+
+class TestTagModel(TestCase):
+    """
+    Testing Tag Model
+    """
+
+    def test_tag(self) -> None:
+        tags = Tag.objects.create(
+            name=fake.word(),
+        )
+
+        self.assertEqual(str(tags), tags.name)
