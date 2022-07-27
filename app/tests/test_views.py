@@ -207,6 +207,9 @@ class TestPasswordReset(TestCase):
         )
 
     def test_verify_password_reset_token(self) -> None:
+        """
+        Testing ability of a valid user to reset their password
+        """
         token = PasswordResetTokenGenerator().make_token(self.user)
         encoded_pk = urlsafe_base64_encode(force_bytes(self.user.pk))
         reset_url = reverse(
@@ -219,6 +222,9 @@ class TestPasswordReset(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_verify_password_reset_wrong_token(self) -> None:
+        """
+        Testing password verification using an invalid token
+        """
         encoded_pk = urlsafe_base64_encode(force_bytes(self.user.pk))
         reset_url = reverse(
             "verify-password-reset",
@@ -233,6 +239,9 @@ class TestPasswordReset(TestCase):
         self.assertIn("The reset token is invalid", str(response.json()))
 
     def test_verify_password_reset_wrong_encoded_pk(self) -> None:
+        """
+        Testing password verification using a wrong encoded pk
+        """
         reset_url = reverse(
             "verify-password-reset",
             kwargs={"encoded_pk": "encoded_pk", "token": "token"},
@@ -246,7 +255,9 @@ class TestPasswordReset(TestCase):
         self.assertIn("The encoded_pk is invalid", str(response.json()))
 
     def test_invalid_user_id(self) -> None:
-
+        """
+        Testing verification of password by an invalid user
+        """
         reset_url = reverse(
             "verify-password-reset",
             kwargs={
@@ -260,7 +271,11 @@ class TestPasswordReset(TestCase):
         self.assertIn("This field is required", str(resp.data))  # type: ignore[attr-defined]
 
 
-class TestCreateArticle(TestCase):
+class TestArticleViews(TestCase):
+    """
+    Tests for articles app views
+    """
+
     user: Any
     article: Any
     password: str
@@ -268,6 +283,9 @@ class TestCreateArticle(TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        """
+        setup data to use in the tests
+        """
         super().setUpClass()
         cls.password = fake.password()
         cls.user = User.objects.create_user(
@@ -292,7 +310,7 @@ class TestCreateArticle(TestCase):
     @property
     def bearer_token(self) -> dict:
         """
-        Authentication function
+        Authentication function: logs in user
         """
         login_url = reverse("login")
         response = self.client.post(
