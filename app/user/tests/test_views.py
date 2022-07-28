@@ -249,7 +249,7 @@ class TestPasswordReset(TestCase):
         self.assertIn("This field is required", str(resp.data))  # type: ignore[attr-defined]
 
 
-class TestFollowingView(APITestCase):
+class TestUserFollowingView(APITestCase):
     def setUp(self) -> None:
         self.password = fake.password()
         self.user_one = User.objects.create_user(
@@ -279,3 +279,54 @@ class TestFollowingView(APITestCase):
             **self.bearer_token,
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+    
+    def test_unauthorized_get_followers(self) -> None:
+        url = reverse("following", kwargs={"id": self.user_one.id})
+        response = self.client.get(
+            url,
+            format="json",
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_authorized_user_follow(self) -> None:
+        url = reverse(
+            "follow"
+        )
+        response = self.client.post(
+            url,
+            data={"follow": self.user_two.id},
+            format="json",
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_authorized_user_unfollow(self) -> None:
+        url = reverse(
+            "unfollow", kwargs={"id": self.user_two.id},
+        )
+        response = self.client.post(
+            url,
+            format="json",
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_unauthorized_user_unfollow(self) -> None:
+        url = reverse(
+                "unfollow", kwargs={"id": self.user_one.id}
+        )
+        response = self.client.delete(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)    
+
+    def test_unauthorized_user_follow(self) -> None:
+        url = reverse(
+            "follow"
+        )
+        response = self.client.post(
+            url,
+            data={"follow": self.user_one.id},
+            format="json",
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)    
