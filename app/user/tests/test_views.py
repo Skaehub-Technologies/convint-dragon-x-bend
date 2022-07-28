@@ -279,7 +279,7 @@ class TestUserFollowingView(APITestCase):
             **self.bearer_token,
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    
+
     def test_unauthorized_get_followers(self) -> None:
         url = reverse("following", kwargs={"id": self.user_one.id})
         response = self.client.get(
@@ -290,9 +290,7 @@ class TestUserFollowingView(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_authorized_user_follow(self) -> None:
-        url = reverse(
-            "follow"
-        )
+        url = reverse("follow")
         response = self.client.post(
             url,
             data={"follow": self.user_two.id},
@@ -303,30 +301,29 @@ class TestUserFollowingView(APITestCase):
 
     def test_authorized_user_unfollow(self) -> None:
         url = reverse(
-            "unfollow", kwargs={"id": self.user_two.id},
+            "unfollow",
+            kwargs={"id": self.user_two.id},
         )
         response = self.client.post(
             url,
             format="json",
             **self.bearer_token,
         )
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(
+            response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED
+        )
 
     def test_unauthorized_user_unfollow(self) -> None:
-        url = reverse(
-                "unfollow", kwargs={"id": self.user_one.id}
-        )
+        url = reverse("unfollow", kwargs={"id": self.user_one.id})
         response = self.client.delete(url, format="json")
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)    
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_unauthorized_user_follow(self) -> None:
-        url = reverse(
-            "follow"
-        )
+        url = reverse("follow")
         response = self.client.post(
             url,
             data={"follow": self.user_one.id},
             format="json",
             **self.bearer_token,
         )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)    
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
