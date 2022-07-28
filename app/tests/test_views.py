@@ -345,7 +345,7 @@ class TestArticleViews(TestCase):
         """
         count = Article.objects.count()
         response = self.client.delete(
-            reverse("article-delete", kwargs={"slug": self.article.slug}),
+            reverse("article-detail", kwargs={"slug": self.article.slug}),
             **self.bearer_token,
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -357,7 +357,7 @@ class TestArticleViews(TestCase):
         """
         count = Article.objects.count()
         response = self.client.delete(
-            reverse("article-delete", kwargs={"slug": self.article.slug}),
+            reverse("article-detail", kwargs={"slug": self.article.slug}),
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(Article.objects.count(), count)
