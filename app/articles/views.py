@@ -1,11 +1,7 @@
 from typing import Any
 
-from django.contrib.auth.mixins import PermissionRequiredMixin
 from rest_framework import generics, status
-from rest_framework.permissions import (
-    IsAuthenticated,
-    IsAuthenticatedOrReadOnly,
-)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -15,23 +11,13 @@ from app.articles.permissions import AuthorOrReadOnly
 from app.articles.serializers import ArticlesSerializers
 
 
-class ArticleCreateView(generics.CreateAPIView):
+class ArticleListCreateView(generics.ListCreateAPIView):
     permission_classes = [
-        AuthorOrReadOnly,
         IsAuthenticated,
+        AuthorOrReadOnly,
     ]
+    serializer_class = ArticlesSerializers
     lookup_field = "user"
-    serializer_class = ArticlesSerializers
-    queryset = Article.objects.all()
-    renderer_classes = [JSONRenderer]
-
-
-class ArticleListView(generics.ListCreateAPIView, PermissionRequiredMixin):
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    permission_required = [
-        "articles.view_article",
-    ]
-    serializer_class = ArticlesSerializers
     queryset = Article.objects.all()
     renderer_classes = [
         JSONRenderer,
