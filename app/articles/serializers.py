@@ -20,6 +20,9 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class ArticlesSerializers(serializers.ModelSerializer):
+    post_id = serializers.CharField(
+        read_only=True,
+    )
     author = UserSerializer(read_only=True)
     title = serializers.CharField(
         max_length=400,
