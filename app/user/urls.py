@@ -5,16 +5,16 @@ from rest_framework_simplejwt.views import (
 )
 
 from app.user.views import (
+    FollowersFollowingView,
+    FollowProfile,
     PasswordReset,
     ProfileDetailView,
     ProfileListView,
+    UnFollowProfile,
     UserRegister,
     UserView,
     VerifyEmailView,
     VerifyPasswordReset,
-    FollowersFollowingView,
-    FollowProfile,
-    UnFollowProfile,
 )
 
 urlpatterns = [

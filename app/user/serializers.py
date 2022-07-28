@@ -5,10 +5,6 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
-from rest_framework.response import Response
-from rest_framework.request import Request
-from rest_framework import status
-
 from rest_framework.validators import UniqueValidator
 
 from app.user.models import Profile, UserFollowing
@@ -51,7 +47,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id","email", "username", "password")
+        fields = ("id", "email", "username", "password")
 
     def create(self, validated_data: Any) -> Any:
         user = User.objects.create_user(**validated_data)
@@ -191,6 +187,7 @@ class VerifyPasswordResetSerializer(serializers.Serializer):
         user.save()
         return data
 
+
 class UserFollowingSerializer(serializers.ModelSerializer):
     follow = serializers.SlugRelatedField(
         write_only=True, slug_field="id", queryset=User.objects.all()
@@ -201,7 +198,7 @@ class UserFollowingSerializer(serializers.ModelSerializer):
         model = UserFollowing
         fields = ["follow", "user", "follower", "followed"]
         read_only_fields = ["user"]
-    
+
     def validate(self, data: Any) -> Any:
         check_follow = UserFollowing.objects.filter(
             follower=data.get("user"), followed=data.get("follow")
@@ -215,13 +212,14 @@ class UserFollowingSerializer(serializers.ModelSerializer):
             )
 
     def create(self, validated_data: Any) -> Any:
-    
+
         connection = UserFollowing.objects.create(
             follower=validated_data.get("user"),
             followed=validated_data.get("follow"),
         )
 
         return connection
+
 
 class FollowersFollowingSerializer(serializers.ModelSerializer):
     following = serializers.SerializerMethodField()
@@ -238,6 +236,7 @@ class FollowersFollowingSerializer(serializers.ModelSerializer):
     def get_followers(self, obj: Any) -> Any:
 
         return FollowerSerializer(obj.followers.all(), many=True).data
+
 
 class FollowedSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True, source="followed.id")

@@ -1,3 +1,4 @@
+import uuid
 from typing import Any, Literal
 
 from cloudinary.models import CloudinaryField
@@ -8,7 +9,7 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-import uuid
+
 from app.abstracts import TimeStampedModel
 
 
@@ -102,6 +103,7 @@ class Profile(models.Model):
     def __str__(self) -> str:
         return self.user.username
 
+
 class UserFollowing(TimeStampedModel):
     id = models.UUIDField(
         primary_key=True,
@@ -124,6 +126,7 @@ class UserFollowing(TimeStampedModel):
         null=True,
         blank=True,
     )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(

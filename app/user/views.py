@@ -10,16 +10,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from app.user.models import Profile, UserFollowing
+from app.user.models import Profile
 from app.user.permissions import IsUser
 from app.user.serializers import (
+    FollowersFollowingSerializer,
     PasswordResetSerializer,
     ProfileSerializer,
+    UserFollowingSerializer,
     UserSerializer,
     VerifyEmailSerializer,
     VerifyPasswordResetSerializer,
-    UserFollowingSerializer,
-    FollowersFollowingSerializer,
 )
 
 User = get_user_model()
@@ -117,32 +117,25 @@ class VerifyPasswordReset(generics.GenericAPIView):
             status=status.HTTP_200_OK,
         )
 
+
 class FollowersFollowingView(generics.RetrieveAPIView):
     serializer_class = FollowersFollowingSerializer
     permission_classes = [IsAuthenticated]
     queryset = User.objects.all()
     lookup_field = "id"
 
+
 class FollowProfile(generics.CreateAPIView):
-   
+
     serializer_class = UserFollowingSerializer
     permission_classes = [IsAuthenticated]
     renderer_classes = [JSONRenderer]
 
+
 class UnFollowProfile(generics.DestroyAPIView):
-    # def delete(self, data: Any) -> Any:
-    #     connection = UserFollowing.objects.filter(
-    #         follower=data.get("user"), followed=data.get("follow")
-    #     )
-    #     if connection:
-    #         connection.delete()
-    #         return Response(
-    #             "Successfully unfollowed", status=status.HTTP_204_NO_CONTENT
-    #         )
-    #     return Response("You haven't followed anyone yet")
 
     serializer_class = UserFollowingSerializer
     permission_classes = [IsAuthenticated]
     queryset = User.objects.all()
     renderer_classes = [JSONRenderer]
-    lookup_field ="id"
+    lookup_field = "id"

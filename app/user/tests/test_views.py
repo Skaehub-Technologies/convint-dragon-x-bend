@@ -1,7 +1,6 @@
-from cgitb import lookup
+import json
 from typing import Any
 from unittest.mock import patch
-import json
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -9,7 +8,6 @@ from django.core import mail
 from django.test import TestCase
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.urls import reverse
-from rest_framework.exceptions import PermissionDenied
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from faker import Faker
@@ -270,13 +268,11 @@ class TestFollowingView(APITestCase):
             data={"email": self.user_two.email, "password": self.password},
             format="json",
         )
-        token = json.loads(response.content).get("access")  # type: ignore[attr-defined]
+        token = json.loads(response.content).get("access")
         return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
 
     def test_authorized_get_followers(self) -> None:
-        url = reverse(
-            "following", kwargs={"id": self.user_one.id}
-        )
+        url = reverse("following", kwargs={"id": self.user_one.id})
         response = self.client.get(
             url,
             format="json",
