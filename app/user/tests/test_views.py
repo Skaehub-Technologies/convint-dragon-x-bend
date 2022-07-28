@@ -273,51 +273,6 @@ class TestFollowingView(APITestCase):
         token = json.loads(response.content).get("access")  # type: ignore[attr-defined]
         return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
 
-    def test_unauthorized_user_follow(self) -> None:
-        url = reverse(
-            "follow", kwargs={"id": self.user_one.id}
-        )
-        response = self.client.post(url, format="json")
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_unauthorized_user_unfollow(self) -> None:
-        url = reverse(
-            "follow", kwargs={"id": self.user_one.id}
-        )
-        response = self.client.delete(url, format="json")
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_authorized_user_follow(self) -> None:
-        url = reverse(
-            "follow", kwargs={"id": self.user_one.id}
-        )
-        response = self.client.post(
-            url,
-            format="json",
-            **self.bearer_token,
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertContains(response, text=self.user_one.username)
-
-
-    def test_authorized_user_unfollow(self) -> None:
-        self.client.post(
-            reverse(
-                "unfollow", kwargs={"id": self.user_one.id}
-            ),
-            format="json",
-            **self.bearer_token,
-        )
-        url = reverse(
-            "unfollow", kwargs={"id": self.user_one.id}
-        )
-        response = self.client.delete(
-            url,
-            format="json",
-            **self.bearer_token,
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
     def test_authorized_get_followers(self) -> None:
         url = reverse(
             "following", kwargs={"id": self.user_one.id}
@@ -328,35 +283,3 @@ class TestFollowingView(APITestCase):
             **self.bearer_token,
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_user_cannot_follow_self(self) -> None:
-        url = reverse(
-            "follow", kwargs={"id": self.user_two.id}
-        )
-        response = self.client.post(
-            url,
-            format="json",
-            **self.bearer_token,
-        )
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_user_cannot_follow_same_user(self) -> None:
-        url = reverse(
-            "follow", kwargs={"id": self.user_two.id}
-        )
-
-        self.client.post(
-            url,
-            format="json",
-            **self.bearer_token,
-        )
-        response = self.client.post(
-            url,
-            format="json",
-            **self.bearer_token,
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertRaisesMessage(
-            PermissionDenied, "You are already following this user"
-        )
