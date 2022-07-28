@@ -12,6 +12,9 @@ from app.user.views import (
     UserView,
     VerifyEmailView,
     VerifyPasswordReset,
+    FollowersFollowingView,
+    FollowProfile,
+    UnFollowProfile,
 )
 
 urlpatterns = [
@@ -36,4 +39,11 @@ urlpatterns = [
         VerifyPasswordReset.as_view(),
         name="verify-password-reset",
     ),
+    path(
+        "following/<str:id>/",
+        FollowersFollowingView.as_view(),
+        name="following",
+    ),
+    path("follow/", FollowProfile.as_view(), name="follow"),
+    path("unfollow/<str:id>/", UnFollowProfile.as_view(), name="unfollow"),
 ]

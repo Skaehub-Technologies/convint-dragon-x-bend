@@ -1,5 +1,7 @@
+from cgitb import lookup
 from typing import Any
 from unittest.mock import patch
+import json
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -7,6 +9,7 @@ from django.core import mail
 from django.test import TestCase
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.urls import reverse
+from rest_framework.exceptions import PermissionDenied
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from faker import Faker
@@ -246,3 +249,114 @@ class TestPasswordReset(TestCase):
         resp = self.client.post(reset_url)
         self.assertEqual(resp.status_code, 400)
         self.assertIn("This field is required", str(resp.data))  # type: ignore[attr-defined]
+
+
+class TestFollowingView(APITestCase):
+    def setUp(self) -> None:
+        self.password = fake.password()
+        self.user_one = User.objects.create_user(
+            username=fake.name(), email=fake.email(), password=self.password
+        )
+        self.user_two = User.objects.create_user(
+            username=fake.name(), email=fake.email(), password=self.password
+        )
+        self.client = APIClient()
+
+    @property
+    def bearer_token(self) -> Any:
+        login_url = reverse("login")
+        response = self.client.post(
+            login_url,
+            data={"email": self.user_two.email, "password": self.password},
+            format="json",
+        )
+        token = json.loads(response.content).get("access")  # type: ignore[attr-defined]
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+
+    def test_unauthorized_user_follow(self) -> None:
+        url = reverse(
+            "follow", kwargs={"id": self.user_one.id}
+        )
+        response = self.client.post(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_unauthorized_user_unfollow(self) -> None:
+        url = reverse(
+            "follow", kwargs={"id": self.user_one.id}
+        )
+        response = self.client.delete(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_authorized_user_follow(self) -> None:
+        url = reverse(
+            "follow", kwargs={"id": self.user_one.id}
+        )
+        response = self.client.post(
+            url,
+            format="json",
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, text=self.user_one.username)
+
+
+    def test_authorized_user_unfollow(self) -> None:
+        self.client.post(
+            reverse(
+                "unfollow", kwargs={"id": self.user_one.id}
+            ),
+            format="json",
+            **self.bearer_token,
+        )
+        url = reverse(
+            "unfollow", kwargs={"id": self.user_one.id}
+        )
+        response = self.client.delete(
+            url,
+            format="json",
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_authorized_get_followers(self) -> None:
+        url = reverse(
+            "following", kwargs={"id": self.user_one.id}
+        )
+        response = self.client.get(
+            url,
+            format="json",
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_cannot_follow_self(self) -> None:
+        url = reverse(
+            "follow", kwargs={"id": self.user_two.id}
+        )
+        response = self.client.post(
+            url,
+            format="json",
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_user_cannot_follow_same_user(self) -> None:
+        url = reverse(
+            "follow", kwargs={"id": self.user_two.id}
+        )
+
+        self.client.post(
+            url,
+            format="json",
+            **self.bearer_token,
+        )
+        response = self.client.post(
+            url,
+            format="json",
+            **self.bearer_token,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertRaisesMessage(
+            PermissionDenied, "You are already following this user"
+        )

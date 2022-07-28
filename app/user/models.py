@@ -8,8 +8,7 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from hashid_field import HashidAutoField
-
+import uuid
 from app.abstracts import TimeStampedModel
 
 
@@ -56,7 +55,13 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
-    id = HashidAutoField(primary_key=True, alphabet="0123456789abcdef")
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+        max_length=255,
+    )
     username = models.CharField(
         _("username"),
         max_length=150,
@@ -96,3 +101,37 @@ class Profile(models.Model):
 
     def __str__(self) -> str:
         return self.user.username
+
+class UserFollowing(TimeStampedModel):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+        max_length=255,
+    )
+    follower = models.ForeignKey(
+        User,
+        related_name="following",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    followed = models.ForeignKey(
+        User,
+        related_name="followers",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["follower", "followed"],
+                name="unique_following",
+            )
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.follower} is following {self.followed}"
