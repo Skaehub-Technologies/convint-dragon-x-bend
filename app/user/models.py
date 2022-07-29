@@ -94,7 +94,6 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     REQUIRED_FIELDS = ["username", "password"]
     USERNAME_FIELD = "email"
 
-
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     image = CloudinaryField("image")
@@ -103,15 +102,8 @@ class Profile(models.Model):
     def __str__(self) -> str:
         return self.user.username
 
-
 class UserFollowing(TimeStampedModel):
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-        unique=True,
-        max_length=255,
-    )
+    
     follower = models.ForeignKey(
         User,
         related_name="following",

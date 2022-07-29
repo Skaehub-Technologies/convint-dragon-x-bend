@@ -1,6 +1,7 @@
 from typing import Any
 
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, response, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -10,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from app.user.models import Profile
+from app.user.models import Profile, UserFollowing
 from app.user.permissions import IsUser
 from app.user.serializers import (
     FollowersFollowingSerializer,
@@ -136,6 +137,12 @@ class UnFollowProfile(generics.DestroyAPIView):
 
     serializer_class = UserFollowingSerializer
     permission_classes = [IsAuthenticated]
-    queryset = User.objects.all()
+    queryset = UserFollowing.objects.all()
     renderer_classes = [JSONRenderer]
-    lookup_field = "id"
+
+    def get_object(self) -> Any:
+        return get_object_or_404(
+            self.get_queryset(),
+            follower = self.request.user,
+            followed = self.kwargs.get("id"),
+        )
