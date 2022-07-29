@@ -3,10 +3,16 @@ from django.urls import path
 from app.articles.views import ArticleDetailView, ArticleListCreateView
 
 urlpatterns = [
-    path("articles/", ArticleListCreateView.as_view(), name="article-list"),
+    path("all-articles/", ArticleListCreateView.as_view(), name="articles"),
     path(
-        "article/<slug:slug>/",
+        "article/<slug:slug>/detail/",
         ArticleDetailView.as_view(),
-        name="article-detail",
+        name="article-update",
     ),
+    path(
+        "delete/<slug:slug>/detail/",
+        ArticleDetailView.as_view(),
+        name="article-delete",
+    ),
+    path("create/", ArticleListCreateView.as_view(), name="create"),
 ]

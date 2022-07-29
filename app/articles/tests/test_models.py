@@ -1,11 +1,9 @@
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils.text import slugify
 from faker import Faker
 
 from app.articles.models import Article, Tag
 
-User = get_user_model()
 fake = Faker()
 
 

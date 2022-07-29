@@ -19,7 +19,6 @@ import cloudinary.api
 import cloudinary.uploader
 import dj_database_url
 from decouple import config
-from rest_framework.renderers import JSONRenderer
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -159,8 +158,6 @@ SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": False,
 }
 
-renderer_classes = [JSONRenderer]
-
 # sendgrid settings
 EMAIL_HOST = "smtp.sendgrid.net"
 EMAIL_HOST_USER = "apikey"
@@ -169,6 +166,11 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USER = config("EMAIL_USER", "")
 
+# CLOUDINARY_STORAGE = {
+#     "CLOUD_NAME": "devowino",
+#     "API_KEY": config("CLOUDINARY_API_KEY"),
+#     "API_SECRET": config("API_SECRET"),
+# }
 
 cloudinary.config(
     cloud_name="devowino",

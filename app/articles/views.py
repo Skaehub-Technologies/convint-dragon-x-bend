@@ -2,6 +2,7 @@ from typing import Any
 
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -18,6 +19,9 @@ class ArticleListCreateView(generics.ListCreateAPIView):
     serializer_class = ArticlesSerializers
     lookup_field = "user"
     queryset = Article.objects.all()
+    renderer_classes = [
+        JSONRenderer,
+    ]
 
 
 class ArticleDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -28,6 +32,9 @@ class ArticleDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ArticlesSerializers
     lookup_field = "slug"
     queryset = Article.objects.all()
+    renderer_classes = [
+        JSONRenderer,
+    ]
 
     def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """

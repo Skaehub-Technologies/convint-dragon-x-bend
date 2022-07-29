@@ -7,11 +7,10 @@ from django.test import TestCase
 from django.urls import reverse
 from faker import Faker
 from rest_framework import status
-from rest_framework.test import APIClient
 
 from app.articles.models import Article
 
-from .mock import sample_image
+from .mocks import sample_image
 
 User = get_user_model()
 fake = Faker()
@@ -53,9 +52,6 @@ class TestArticleViews(TestCase):
             "taglist": f"{fake.word()}, {fake.word()}",
         }
 
-    def setUp(self) -> None:
-        self.client = APIClient()
-
     @property
     def bearer_token(self) -> dict:
         """
@@ -79,12 +75,11 @@ class TestArticleViews(TestCase):
         """
         count = Article.objects.count()
         response = self.client.post(
-            reverse("article-list"),
+            reverse("create"),
             data=self.data,
             format="json",
             **self.bearer_token,
         )
-
         self.assertTrue(upload_resource.called)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Article.objects.count(), count + 1)
@@ -95,7 +90,7 @@ class TestArticleViews(TestCase):
         """
         count = Article.objects.count()
         response = self.client.delete(
-            reverse("article-detail", kwargs={"slug": self.article.slug}),
+            reverse("article-delete", kwargs={"slug": self.article.slug}),
             **self.bearer_token,
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -107,7 +102,7 @@ class TestArticleViews(TestCase):
         """
         count = Article.objects.count()
         response = self.client.delete(
-            reverse("article-detail", kwargs={"slug": self.article.slug}),
+            reverse("article-delete", kwargs={"slug": self.article.slug}),
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(Article.objects.count(), count)

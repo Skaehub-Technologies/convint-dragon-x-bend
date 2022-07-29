@@ -8,5 +8,5 @@ from rest_framework.views import APIView
 class IsUser(permissions.BasePermission):
     def has_object_permission(
         self, request: Request, view: APIView, obj: Any
-    ) -> bool:
-        return bool(obj.user == request.user)
+    ) -> Any:
+        return obj.user == request.user
