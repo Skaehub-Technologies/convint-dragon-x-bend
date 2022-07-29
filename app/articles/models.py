@@ -3,7 +3,6 @@ from typing import Any
 
 from cloudinary.models import CloudinaryField
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
@@ -36,9 +35,7 @@ class Article(TimeStampedModel):
     body = models.TextField()
     tags = models.ManyToManyField(Tag, blank=True, related_name="tags")
     favourited = models.BooleanField(null=True)
-    favouritesCount = models.IntegerField(
-        blank=True, default=0, validators=[MinValueValidator(0)]
-    )
+    favouritesCount = models.BigIntegerField(blank=True, default=0)
     author = models.ForeignKey(
         User, on_delete=models.SET_NULL, related_name="author", null=True
     )
