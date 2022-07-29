@@ -300,18 +300,18 @@ class TestUserFollowingView(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_authorized_user_unfollow(self) -> None:
-        url = reverse(
-            "unfollow",
-            kwargs={"id": self.user_two.id},
+        self.client.post(
+            reverse("unfollow", kwargs={"id": self.user_one.id}),
+            format="json",
+            **self.bearer_token,
         )
-        response = self.client.post(
+        url = reverse("unfollow", kwargs={"id": self.user_one.id})
+        response = self.client.delete(
             url,
             format="json",
             **self.bearer_token,
         )
-        self.assertEqual(
-            response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED
-        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_unauthorized_user_unfollow(self) -> None:
         url = reverse("unfollow", kwargs={"id": self.user_one.id})
@@ -327,3 +327,22 @@ class TestUserFollowingView(APITestCase):
             **self.bearer_token,
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_user_cannot_follow_same_user(self) -> None:
+        url = reverse(
+            "follow",
+        )
+        self.client.post(
+            url,
+            data={"follow": self.user_two.id},
+            format="json",
+            **self.bearer_token,
+        )
+        response = self.client.post(
+            url,
+            data={"follow": self.user_two.id},
+            format="json",
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("You already following this user", str(response.data))

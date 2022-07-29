@@ -129,6 +129,3 @@ class UserFollowing(TimeStampedModel):
             )
         ]
         ordering = ["-created_at"]
-
-    def __str__(self) -> str:
-        return f"{self.follower} is following {self.followed}"
