@@ -143,6 +143,6 @@ class UnFollowProfile(generics.DestroyAPIView):
     def get_object(self) -> Any:
         return get_object_or_404(
             self.get_queryset(),
-            follower = self.request.user,
-            followed = self.kwargs.get("id"),
+            follower=self.request.user,
+            followed=self.kwargs.get("id"),
         )
