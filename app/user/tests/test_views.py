@@ -300,18 +300,20 @@ class TestUserFollowingView(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_authorized_user_unfollow(self) -> None:
-        self.client.post(
-            reverse("unfollow", kwargs={"id": self.user_one.id}),
+        url = reverse("follow")
+        response = self.client.post(
+            url,
+            data={"follow": self.user_two.id},
             format="json",
             **self.bearer_token,
         )
-        url = reverse("unfollow", kwargs={"id": self.user_one.id})
+        url = reverse("unfollow", kwargs={"id": self.user_two.id})
         response = self.client.delete(
             url,
             format="json",
             **self.bearer_token,
         )
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_unauthorized_user_unfollow(self) -> None:
         url = reverse("unfollow", kwargs={"id": self.user_one.id})
