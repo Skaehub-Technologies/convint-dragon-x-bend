@@ -14,7 +14,7 @@ from faker import Faker
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
-from app.user.models import Profile
+from app.user.models import Profile, UserFollowing
 from app.user.token import account_activation_token
 
 from .mocks import test_image, test_user
@@ -152,8 +152,6 @@ class TestProfileView(APITestCase):
 
         self.assertTrue(upload_resource.called)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
 class TestPasswordReset(TestCase):
     testuser: dict
     user: Any
@@ -250,14 +248,19 @@ class TestPasswordReset(TestCase):
 
 
 class TestUserFollowingView(APITestCase):
-    def setUp(self) -> None:
-        self.password = fake.password()
-        self.user_one = User.objects.create_user(
-            username=fake.name(), email=fake.email(), password=self.password
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.password = fake.password()
+        cls.user_one = User.objects.create_user(
+            username=fake.name(), email=fake.email(), password=cls.password
         )
-        self.user_two = User.objects.create_user(
-            username=fake.name(), email=fake.email(), password=self.password
+        cls.user_two = User.objects.create_user(
+            username=fake.name(), email=fake.email(), password=cls.password
         )
+
+        return super().setUpClass()
+
+    def setUp(self)-> None: 
         self.client = APIClient()
 
     @property
@@ -285,11 +288,17 @@ class TestUserFollowingView(APITestCase):
         response = self.client.get(
             url,
             format="json",
-            **self.bearer_token,
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_authorized_user_follow(self) -> None:
+        url = reverse("following", kwargs={"id": self.user_two.id})
+        response = self.client.get(
+            url,
+            format="json",
+            **self.bearer_token,
+        )
+
         url = reverse("follow")
         response = self.client.post(
             url,
@@ -298,8 +307,16 @@ class TestUserFollowingView(APITestCase):
             **self.bearer_token,
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(self.user_two.id)
 
     def test_authorized_user_unfollow(self) -> None:
+        url = reverse("following", kwargs={"id": self.user_two.id})
+        response = self.client.get(
+            url,
+            format="json",
+            **self.bearer_token,
+        )
+
         url = reverse("follow")
         response = self.client.post(
             url,
@@ -314,6 +331,8 @@ class TestUserFollowingView(APITestCase):
             **self.bearer_token,
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertTrue(self.user_two.id)
+
 
     def test_unauthorized_user_unfollow(self) -> None:
         url = reverse("unfollow", kwargs={"id": self.user_one.id})
@@ -326,9 +345,8 @@ class TestUserFollowingView(APITestCase):
             url,
             data={"follow": self.user_one.id},
             format="json",
-            **self.bearer_token,
         )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_user_cannot_follow_same_user(self) -> None:
         url = reverse(
