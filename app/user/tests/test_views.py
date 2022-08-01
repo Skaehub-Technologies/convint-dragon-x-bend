@@ -14,7 +14,7 @@ from faker import Faker
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
-from app.user.models import Profile, UserFollowing
+from app.user.models import Profile
 from app.user.token import account_activation_token
 
 from .mocks import test_image, test_user
@@ -152,6 +152,8 @@ class TestProfileView(APITestCase):
 
         self.assertTrue(upload_resource.called)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
 class TestPasswordReset(TestCase):
     testuser: dict
     user: Any
@@ -248,6 +250,10 @@ class TestPasswordReset(TestCase):
 
 
 class TestUserFollowingView(APITestCase):
+    user_one: Any
+    user_two: Any
+    password: str
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.password = fake.password()
@@ -260,7 +266,7 @@ class TestUserFollowingView(APITestCase):
 
         return super().setUpClass()
 
-    def setUp(self)-> None: 
+    def setUp(self) -> None:
         self.client = APIClient()
 
     @property
@@ -332,7 +338,6 @@ class TestUserFollowingView(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertTrue(self.user_two.id)
-
 
     def test_unauthorized_user_unfollow(self) -> None:
         url = reverse("unfollow", kwargs={"id": self.user_one.id})
