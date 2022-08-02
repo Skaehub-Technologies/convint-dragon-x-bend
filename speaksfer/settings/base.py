@@ -174,14 +174,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USER = config("EMAIL_USER", "")
 
-# CLOUDINARY_STORAGE = {
-#     "CLOUD_NAME": "devowino",
-#     "API_KEY": config("CLOUDINARY_API_KEY"),
-#     "API_SECRET": config("API_SECRET"),
-# }
-
 cloudinary.config(
-    cloud_name="devowino",
+    cloud_name=config("CLOUDINARY_NAME"),
     api_key=config("CLOUDINARY_API_KEY"),
-    api_secret=config("API_SECRET"),
+    api_secret=config("CLOUDINARY_API_SECRET"),
 )

@@ -9,11 +9,11 @@ fake = Faker()
 
 
 class TestUserModel(TestCase):
-    """Testing models"""
+    """Test models"""
 
     def test_create_user(self) -> None:
         """
-        Testing registation of a new user
+        Test registation of a new user
         """
         user = User.objects.create_user(
             username="ndovu", email="ndovu@test.com", password="wild"
@@ -27,7 +27,7 @@ class TestUserModel(TestCase):
 
     def test_user_username_errors(self) -> None:
         """
-        Testing registration of a user with an invalid username
+        Test registration of a user with an invalid username
         """
         with self.assertRaises(ValueError):
             User.objects.create_user(
@@ -36,7 +36,7 @@ class TestUserModel(TestCase):
 
     def test_user_email_errors(self) -> None:
         """
-        Testing registration of a user using an invalid email
+        Test registration of a user using an invalid email
         """
         with self.assertRaises(ValueError):
             User.objects.create_user(
@@ -140,7 +140,7 @@ class TestUserModel(TestCase):
 
 class TestProfileModel(TestCase):
     """
-    Testing profile
+    Test profile
     """
 
     def test_profile(self) -> None:
