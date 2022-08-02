@@ -300,7 +300,10 @@ class TestUserFollowingView(APITestCase):
     def test_authorized_user_follow(self) -> None:
 
         followers = UserFollowing.objects.filter(followed=self.user_one.id)
-        self.assertNotIn(self.user_two.id, [follower.follower.id for follower in followers])
+        self.assertNotIn(
+            self.user_two.id,
+            [follower.follower.id for follower in followers],  # type: ignore[union-attr]
+        )
 
         url = reverse("follow")
         response = self.client.post(
@@ -310,8 +313,10 @@ class TestUserFollowingView(APITestCase):
             **self.bearer_token,
         )
         follows = UserFollowing.objects.filter(followed=self.user_one.id)
-
-        self.assertIn(self.user_two.id, [follower.follower.id for follower in follows])
+        self.assertIn(
+            self.user_two.id,
+            [follower.follower.id for follower in follows],  # type: ignore[union-attr]
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_authorized_user_unfollow(self) -> None:
