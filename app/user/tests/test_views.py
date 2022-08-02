@@ -134,7 +134,6 @@ class TestProfileView(APITestCase):
                 "email": test_user["email"],
                 "password": test_user["password"],
             },
-            format="json",
         )
         token = json.loads(response.content).get("access")
         return {"HTTP_AUTHORIZATION": f"Bearer {token}"}

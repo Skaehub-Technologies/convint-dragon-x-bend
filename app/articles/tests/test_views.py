@@ -61,7 +61,6 @@ class TestArticleViews(TestCase):
         response = self.client.post(
             login_url,
             data={"email": self.user.email, "password": self.password},
-            format="json",
         )
         token = json.loads(response.content).get("access")
         return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
@@ -75,9 +74,8 @@ class TestArticleViews(TestCase):
         """
         count = Article.objects.count()
         response = self.client.post(
-            reverse("create"),
+            reverse("article-list"),
             data=self.data,
-            format="json",
             **self.bearer_token,
         )
         self.assertTrue(upload_resource.called)
@@ -90,7 +88,7 @@ class TestArticleViews(TestCase):
         """
         count = Article.objects.count()
         response = self.client.delete(
-            reverse("article-delete", kwargs={"slug": self.article.slug}),
+            reverse("article-detail", kwargs={"slug": self.article.slug}),
             **self.bearer_token,
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -102,7 +100,7 @@ class TestArticleViews(TestCase):
         """
         count = Article.objects.count()
         response = self.client.delete(
-            reverse("article-delete", kwargs={"slug": self.article.slug}),
+            reverse("article-detail", kwargs={"slug": self.article.slug}),
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(Article.objects.count(), count)

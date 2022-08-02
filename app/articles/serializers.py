@@ -72,10 +72,12 @@ class ArticlesSerializers(serializers.ModelSerializer):
     def create(self, validated_data: Any) -> Any:
         """set current user as author"""
         validated_data["author"] = self.context.get("request").user  # type: ignore[union-attr]
-        tags = validated_data.pop("taglist")
+        taglist = validated_data.pop("taglist")
         article = super().create(validated_data)
-        for name in tags.split(","):
+        tags = []
+        for name in taglist.split(","):
             tag, _ = Tag.objects.get_or_create(name=name.strip())
-            article.tags.add(tag)
+            tags.append(tag)
+        article.tags.set(tags)
 
         return article
