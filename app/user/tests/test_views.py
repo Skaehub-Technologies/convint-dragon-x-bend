@@ -281,7 +281,7 @@ class TestUserFollowingView(APITestCase):
         return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
 
     def test_authorized_get_followers(self) -> None:
-        url = reverse("following", kwargs={"id": self.user_one.id})
+        url = reverse("following", kwargs={"id": self.user_two.id})
         response = self.client.get(
             url,
             format="json",
@@ -296,6 +296,10 @@ class TestUserFollowingView(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            json.loads(response.content).get("detail"),
+            "Authentication credentials were not provided.",
+        )
 
     def test_authorized_user_follow(self) -> None:
 
@@ -352,6 +356,10 @@ class TestUserFollowingView(APITestCase):
         url = reverse("unfollow", kwargs={"id": self.user_one.id})
         response = self.client.delete(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            json.loads(response.content).get("detail"),
+            "Authentication credentials were not provided.",
+        )
 
     def test_unauthorized_user_follow(self) -> None:
         url = reverse("follow")
@@ -361,6 +369,10 @@ class TestUserFollowingView(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            json.loads(response.content).get("detail"),
+            "Authentication credentials were not provided.",
+        )
 
     def test_user_cannot_follow_same_user(self) -> None:
         url = reverse(
