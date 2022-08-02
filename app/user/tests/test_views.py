@@ -14,7 +14,7 @@ from faker import Faker
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
-from app.user.models import Profile
+from app.user.models import Profile, UserFollowing
 from app.user.token import account_activation_token
 
 from .mocks import test_image, test_user
@@ -298,22 +298,21 @@ class TestUserFollowingView(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_authorized_user_follow(self) -> None:
-        url = reverse("following", kwargs={"id": self.user_two.id})
-        response = self.client.get(
-            url,
-            format="json",
-            **self.bearer_token,
-        )
+
+        followers = UserFollowing.objects.filter(followed=self.user_one.id)
+        self.assertNotIn(self.user_two.id, [follower.follower.id for follower in followers])
 
         url = reverse("follow")
         response = self.client.post(
             url,
-            data={"follow": self.user_two.id},
+            data={"follow": self.user_one.id},
             format="json",
             **self.bearer_token,
         )
+        follows = UserFollowing.objects.filter(followed=self.user_one.id)
+
+        self.assertIn(self.user_two.id, [follower.follower.id for follower in follows])
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(self.user_two.id)
 
     def test_authorized_user_unfollow(self) -> None:
         url = reverse("following", kwargs={"id": self.user_two.id})
