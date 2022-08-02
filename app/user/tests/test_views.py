@@ -347,7 +347,7 @@ class TestUserFollowingView(APITestCase):
             self.user_two.id,
             [follower.follower.id for follower in follows],  # type: ignore[union-attr]
         )
-        
+
     def test_unauthorized_user_unfollow(self) -> None:
         url = reverse("unfollow", kwargs={"id": self.user_one.id})
         response = self.client.delete(url, format="json")
