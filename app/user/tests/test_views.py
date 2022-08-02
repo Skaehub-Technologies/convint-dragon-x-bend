@@ -330,12 +330,12 @@ class TestUserFollowingView(APITestCase):
         url = reverse("follow")
         response = self.client.post(
             url,
-            data={"follow": self.user_two.id},
+            data={"follow": self.user_one.id},
             format="json",
             **self.bearer_token,
         )
 
-        url = reverse("unfollow", kwargs={"id": self.user_two.id})
+        url = reverse("unfollow", kwargs={"id": self.user_one.id})
         response = self.client.delete(
             url,
             format="json",
