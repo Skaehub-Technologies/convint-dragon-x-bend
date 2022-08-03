@@ -102,3 +102,30 @@ class Profile(models.Model):
 
     def __str__(self) -> str:
         return self.user.username
+
+
+class UserFollowing(TimeStampedModel):
+
+    follower = models.ForeignKey(
+        User,
+        related_name="following",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    followed = models.ForeignKey(
+        User,
+        related_name="followers",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["follower", "followed"],
+                name="unique_following",
+            )
+        ]
+        ordering = ["-created_at"]
