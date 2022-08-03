@@ -9,10 +9,12 @@ fake = Faker()
 
 
 class TestUserModel(TestCase):
-    """Testing models"""
+    """Test models"""
 
-    # Testing user
     def test_create_user(self) -> None:
+        """
+        Test registation of a new user
+        """
         user = User.objects.create_user(
             username="ndovu", email="ndovu@test.com", password="wild"
         )
@@ -24,18 +26,27 @@ class TestUserModel(TestCase):
         self.assertFalse(user.is_verified)
 
     def test_user_username_errors(self) -> None:
+        """
+        Test registration of a user with an invalid username
+        """
         with self.assertRaises(ValueError):
             User.objects.create_user(
                 username="", email="tembo@gmail.com", password="nice"
             )
 
     def test_user_email_errors(self) -> None:
+        """
+        Test registration of a user using an invalid email
+        """
         with self.assertRaises(ValueError):
             User.objects.create_user(
                 username="tembo", email="", password="wild"
             )
 
     def test_user_is_active(self) -> None:
+        """
+        Test if a registered user is active
+        """
         user = User.objects.create_user(
             username="tembo",
             email="tembo@gmail.com",
@@ -48,6 +59,9 @@ class TestUserModel(TestCase):
         self.assertEqual(user.is_active, True)
 
     def test_user_is_staff(self) -> None:
+        """
+        Test if a valid user is admin or not
+        """
         user = User.objects.create_user(
             username="tembo",
             email="tembo@gmail.com",
@@ -59,6 +73,9 @@ class TestUserModel(TestCase):
         self.assertTrue(user.is_staff)
 
     def test_user_is_verified(self) -> None:
+        """
+        Test if a user has verified their account
+        """
         user = User.objects.create_user(
             username="tembo",
             email="tembo@gmail.com",
@@ -69,8 +86,10 @@ class TestUserModel(TestCase):
         self.assertIsNot(user.is_verified, False)
         self.assertTrue(user.is_verified)
 
-    # Testing superuser model
     def test_create_superuser(self) -> None:
+        """
+        Test for creating a superuser
+        """
         user = User.objects.create_superuser(
             username="tembo",
             email="testsuperuser@test.com",
@@ -85,12 +104,18 @@ class TestUserModel(TestCase):
         self.assertFalse(user.is_verified)
 
     def test_superuser_password_error(self) -> None:
+        """
+        Test registering superuser using an invalid password
+        """
         with self.assertRaises(ValueError):
             User.objects.create_superuser(
                 username="tembo", email="testsuperuser@test.com", password=""
             )
 
     def test_superuser_staff_error(self) -> None:
+        """
+        Test registering superuser who is not staff
+        """
         with self.assertRaises(ValueError):
             User.objects.create_superuser(
                 username="tembo",
@@ -100,6 +125,9 @@ class TestUserModel(TestCase):
             )
 
     def test_superuser_error(self) -> None:
+        """
+        Test registering superuser who is not superuser
+        """
         with self.assertRaises(ValueError):
             User.objects.create_superuser(
                 username="tembo",
@@ -112,10 +140,13 @@ class TestUserModel(TestCase):
 
 class TestProfileModel(TestCase):
     """
-    Testing profile
+    Test profile
     """
 
     def test_profile(self) -> None:
+        """
+        Test if a profile returns the username of the user
+        """
         user = User.objects.create_user(
             username=fake.name(),
             email=fake.email(),

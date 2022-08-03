@@ -1,19 +1,18 @@
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/Skaehub-Technologies/speaksfer-dragon-x-bend/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/Skaehub-Technologies/speaksfer-dragon-x-bend/tree/main)
 [![codecov](https://codecov.io/gh/Skaehub-Technologies/speaksfer-dragon-x-bend/branch/main/graph/badge.svg?token=IUG32BH17R)](https://codecov.io/gh/Skaehub-Technologies/speaksfer-dragon-x-bend)
 
-SPEAKSFER
-=======
+# SPEAKSFER
 
 ## Vision
 
-
 ---
-## API Documentation
 
+## API Documentation
 
 ## Mockup
 
 ## API Spec
+
 The preferred JSON object to be returned by the API should be structured as follows:
 
 ### Users (for authentication)
@@ -29,7 +28,9 @@ The preferred JSON object to be returned by the API should be structured as foll
   }
 }
 ```
+
 ### Profile
+
 ```source-json
 {
   "profile": {
@@ -40,7 +41,9 @@ The preferred JSON object to be returned by the API should be structured as foll
   }
 }
 ```
+
 ### Single Article
+
 ```source-json
 {
   "article": {
@@ -48,7 +51,7 @@ The preferred JSON object to be returned by the API should be structured as foll
     "title": "How to setup a django project",
     "description": "Where do you start from?",
     "body": "Checkout the docs!!",
-    "tagList": ["django", "setup"],
+    "tags": ["django", "setup"],
     "createdAt": "2016-02-18T03:22:56.637Z",
     "updatedAt": "2016-02-18T03:48:35.824Z",
     "favorited": false,
@@ -62,7 +65,9 @@ The preferred JSON object to be returned by the API should be structured as foll
   }
 }
 ```
+
 ### Multiple Articles
+
 ```source-json
 {
   "articles":[{
@@ -70,7 +75,7 @@ The preferred JSON object to be returned by the API should be structured as foll
     "title": "How to setup a django project",
     "description": "Where do you start from?",
     "body": "Checkout the docs!!",
-    "tagList": ["django", "setup"],
+    "tags": ["django", "setup"],
     "createdAt": "2016-02-18T03:22:56.637Z",
     "updatedAt": "2016-02-18T03:48:35.824Z",
     "favorited": false,
@@ -87,7 +92,7 @@ The preferred JSON object to be returned by the API should be structured as foll
     "title": "How to setup a django project",
     "description": "Where do you start from?",
     "body": "Checkout the docs!!",
-    "tagList": ["django", "setup"],
+    "tags": ["django", "setup"],
     "createdAt": "2016-02-18T03:22:56.637Z",
     "updatedAt": "2016-02-18T03:48:35.824Z",
     "favorited": false,
@@ -102,7 +107,9 @@ The preferred JSON object to be returned by the API should be structured as foll
   "articlesCount": 2
 }
 ```
+
 ### Single Comment
+
 ```source-json
 {
   "comment": {
@@ -119,7 +126,9 @@ The preferred JSON object to be returned by the API should be structured as foll
   }
 }
 ```
+
 ### Multiple Comments
+
 ```source-json
 {
   "comments": [{
@@ -137,7 +146,9 @@ The preferred JSON object to be returned by the API should be structured as foll
   "commentsCount": 1
 }
 ```
+
 ### List of Tags
+
 ```source-json
 {
   "tags": [
@@ -146,7 +157,9 @@ The preferred JSON object to be returned by the API should be structured as foll
   ]
 }
 ```
+
 ### Errors and Status Codes
+
 If a request fails any validations, expect errors in the following format:
 
 ```source-json
@@ -158,16 +171,16 @@ If a request fails any validations, expect errors in the following format:
   }
 }
 ```
+
 ### Other status codes:
+
 401 for Unauthorized requests, when a request requires authentication but it isn't provided
 
 403 for Forbidden requests, when a request may be valid but the user doesn't have permissions to perform the action
 
 404 for Not found requests, when a resource can't be found to fulfill the request
 
-
-Endpoints:
-----------
+## Endpoints:
 
 ### Authentication:
 
@@ -312,7 +325,7 @@ Example request body:
     "title": "How to.. ",
     "description": "Ever wonder how?",
     "body": "You have to..",
-    "tagList": ["reactjs", "django"]
+    "tags": ["reactjs", "django"]
   }
 }
 ```
@@ -321,7 +334,7 @@ Authentication required, will return an Article
 
 Required fields: `title`, `description`, `body`
 
-Optional fields: `tagList` as an array of Strings
+Optional fields: `tags` as an array of Strings
 
 ### Update Article
 

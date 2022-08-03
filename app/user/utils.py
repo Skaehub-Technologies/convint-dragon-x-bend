@@ -47,7 +47,7 @@ def create_email_data(
         url,
         kwargs={"encoded_pk": encoded_pk, "token": token},
     )
-    absurl = f"http://{current_site}{reset_url}"
+    absurl = f"{current_site}{reset_url}"
     body = {"user": user, "link": absurl}
     data = {
         "subject": subject,

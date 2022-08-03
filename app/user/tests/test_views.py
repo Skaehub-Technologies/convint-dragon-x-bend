@@ -29,6 +29,7 @@ class UserRegisterViewsTest(TestCase):
     """
 
     user: Any
+    # data: Dict[str, Any]
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -51,7 +52,7 @@ class UserRegisterViewsTest(TestCase):
         }
 
         response = self.client.post(self.create_url, data, format="json")
-        res_data = response.data  # type: ignore[attr-defined]
+        res_data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(res_data["username"], data["username"])
@@ -112,13 +113,20 @@ class UserRegisterViewsTest(TestCase):
 
 
 class TestProfileView(APITestCase):
+    """
+    Test for Profile Model view
+    """
+
     def setUp(self) -> None:
         self.user_test = User.objects.create_user(**test_user)
 
         self.client = APIClient()
 
     @property
-    def bearer_token(self) -> str:
+    def bearer_token(self) -> dict:
+        """
+        Authentication function
+        """
         login_url = reverse("login")
         response = self.client.post(
             login_url,
@@ -126,28 +134,30 @@ class TestProfileView(APITestCase):
                 "email": test_user["email"],
                 "password": test_user["password"],
             },
-            format="json",
         )
-        return response.data.get("access")  # type: ignore[no-any-return]
+        token = json.loads(response.content).get("access")
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
 
     @patch(
         "cloudinary.uploader.upload_resource", return_value=fake.image_url()
     )
     def test_profile_update(self, upload_resource: Any) -> None:
+        """
+        Test updating of profile by user
+        """
         Profile.objects.create(user=self.user_test)
         data = {
             "bio": "Do I function",
             "image": test_image,
         }
         url = reverse("profile", kwargs={"user": self.user_test.id})
-        self.client.defaults[
-            "HTTP_AUTHORIZATION"
-        ] = f"Bearer {self.bearer_token}"
+
         response = self.client.patch(
             url,
             data=encode_multipart(data=data, boundary=BOUNDARY),
             content_type=MULTIPART_CONTENT,
             enctype="multipart/form-data",
+            **self.bearer_token,
         )
 
         self.assertTrue(upload_resource.called)
@@ -188,10 +198,13 @@ class TestPasswordReset(TestCase):
         response = self.client.post(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(
-            "This field may not be null", str(response.data["email"])  # type: ignore[attr-defined]
+            "This field may not be null", str(response.json()["email"])
         )
 
     def test_verify_password_reset_token(self) -> None:
+        """
+        Testing ability of a valid user to reset their password
+        """
         token = PasswordResetTokenGenerator().make_token(self.user)
         encoded_pk = urlsafe_base64_encode(force_bytes(self.user.pk))
         reset_url = reverse(
@@ -204,6 +217,9 @@ class TestPasswordReset(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_verify_password_reset_wrong_token(self) -> None:
+        """
+        Testing password verification using an invalid token
+        """
         encoded_pk = urlsafe_base64_encode(force_bytes(self.user.pk))
         reset_url = reverse(
             "verify-password-reset",
@@ -215,11 +231,12 @@ class TestPasswordReset(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(
-            "The reset token is invalid", str(response.data)  # type: ignore[attr-defined]
-        )
+        self.assertIn("The reset token is invalid", str(response.json()))
 
     def test_verify_password_reset_wrong_encoded_pk(self) -> None:
+        """
+        Testing password verification using a wrong encoded pk
+        """
         reset_url = reverse(
             "verify-password-reset",
             kwargs={"encoded_pk": "encoded_pk", "token": "token"},
@@ -230,12 +247,12 @@ class TestPasswordReset(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(
-            "The encoded_pk is invalid", str(response.data)  # type: ignore[attr-defined]
-        )
+        self.assertIn("The encoded_pk is invalid", str(response.json()))
 
     def test_invalid_user_id(self) -> None:
-
+        """
+        Testing verification of password by an invalid user
+        """
         reset_url = reverse(
             "verify-password-reset",
             kwargs={

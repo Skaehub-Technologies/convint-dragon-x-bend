@@ -14,6 +14,9 @@ from datetime import timedelta
 from pathlib import Path
 from typing import List
 
+import cloudinary
+import cloudinary.api
+import cloudinary.uploader
 import dj_database_url
 from decouple import config
 
@@ -52,6 +55,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     # App imports
     "app.user",
+    "app.articles",
 ]
 
 AUTH_USER_MODEL = "user.User"
@@ -143,7 +147,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-    )
+    ),
+    "DEFAULT_RENDERER_CLASSES": (
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
+    ),
+    "TEST_REQUEST_RENDERER_CLASSES": (
+        "rest_framework.renderers.MultiPartRenderer",
+        "rest_framework.renderers.JSONRenderer",
+    ),
 }
 
 SIMPLE_JWT = {
@@ -162,11 +174,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USER = config("EMAIL_USER", "")
 
-CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": "devowino",
-    "API_KEY": config("CLOUDINARY_API_KEY"),
-    "API_SECRET": config("API_SECRET"),
-}
-
-
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+cloudinary.config(
+    cloud_name=config("CLOUDINARY_NAME"),
+    api_key=config("CLOUDINARY_API_KEY"),
+    api_secret=config("CLOUDINARY_API_SECRET"),
+)
