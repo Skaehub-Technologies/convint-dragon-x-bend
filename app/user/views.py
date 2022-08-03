@@ -126,7 +126,6 @@ class FollowProfile(generics.CreateAPIView):
 
     serializer_class = UserFollowingSerializer
     permission_classes = [IsAuthenticated]
-    renderer_classes = [JSONRenderer]
 
 
 class UnFollowProfile(generics.DestroyAPIView):
@@ -134,7 +133,6 @@ class UnFollowProfile(generics.DestroyAPIView):
     serializer_class = UserFollowingSerializer
     permission_classes = [IsAuthenticated]
     queryset = UserFollowing.objects.all()
-    renderer_classes = [JSONRenderer]
 
     def get_object(self) -> Any:
         return get_object_or_404(
