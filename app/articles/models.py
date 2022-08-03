@@ -28,7 +28,7 @@ class Article(TimeStampedModel):
         max_length=255,
         primary_key=True,
     )
-    slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
+    slug = models.SlugField(max_length=400, unique=True, blank=True, null=True)
     title = models.CharField(max_length=400, blank=False, null=False)
     image = CloudinaryField("post_images", blank=True, null=True)
     description = models.CharField(max_length=500, blank=True, null=True)
@@ -54,3 +54,12 @@ class Article(TimeStampedModel):
 def slug_pre_save(sender: Any, instance: Any, **kwargs: Any) -> None:
     if instance.slug is None or instance.slug == "":
         instance.slug = slugify(f"{instance.title}-{instance.post_id}")
+
+
+class ArticleBookmark(TimeStampedModel):
+    """
+    Bookmark model to store the articles bookmarked by a reader
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
