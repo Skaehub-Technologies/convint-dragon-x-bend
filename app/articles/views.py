@@ -1,12 +1,11 @@
 from typing import Any
 
-from rest_framework import generics, status
+from rest_framework import filters, generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from app.articles.models import Article
-from rest_framework import filters
 from app.articles.permissions import AuthorOrReadOnly
 from app.articles.serializers import ArticlesSerializers
 
@@ -18,9 +17,9 @@ class ArticleListCreateView(generics.ListCreateAPIView):
     ]
     serializer_class = ArticlesSerializers
     queryset = Article.objects.all()
-    filterset_fields = ['title', 'description', 'body', 'tags', 'author']
+    filterset_fields = ["title", "description", "body", "tags", "author"]
     filter_backends = [filters.SearchFilter]
-    search_fields = ['title', 'description', 'body', 'tags', 'author']
+    search_fields = ["title", "description", "body", "tags", "author"]
 
 
 class ArticleDetailView(generics.RetrieveUpdateDestroyAPIView):
