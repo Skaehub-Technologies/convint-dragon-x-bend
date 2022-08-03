@@ -6,6 +6,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from app.articles.models import Article
+from rest_framework import filters
 from app.articles.permissions import AuthorOrReadOnly
 from app.articles.serializers import ArticlesSerializers
 
@@ -16,8 +17,10 @@ class ArticleListCreateView(generics.ListCreateAPIView):
         AuthorOrReadOnly,
     ]
     serializer_class = ArticlesSerializers
-    lookup_field = "user"
     queryset = Article.objects.all()
+    filterset_fields = ['title', 'description', 'body', 'tags', 'author']
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'description', 'body', 'tags', 'author']
 
 
 class ArticleDetailView(generics.RetrieveUpdateDestroyAPIView):
