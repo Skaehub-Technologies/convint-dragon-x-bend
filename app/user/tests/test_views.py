@@ -1,3 +1,4 @@
+import json
 from typing import Any
 from unittest.mock import patch
 
@@ -13,7 +14,7 @@ from faker import Faker
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
-from app.user.models import Profile
+from app.user.models import Profile, UserFollowing
 from app.user.token import account_activation_token
 
 from .mocks import test_image, test_user
@@ -246,3 +247,148 @@ class TestPasswordReset(TestCase):
         resp = self.client.post(reset_url)
         self.assertEqual(resp.status_code, 400)
         self.assertIn("This field is required", str(resp.data))  # type: ignore[attr-defined]
+
+
+class TestUserFollowingView(APITestCase):
+    user_one: Any
+    user_two: Any
+    password: str
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.password = fake.password()
+        cls.user_one = User.objects.create_user(
+            username=fake.name(), email=fake.email(), password=cls.password
+        )
+        cls.user_two = User.objects.create_user(
+            username=fake.name(), email=fake.email(), password=cls.password
+        )
+
+        return super().setUpClass()
+
+    def setUp(self) -> None:
+        self.client = APIClient()
+
+    @property
+    def bearer_token(self) -> Any:
+        login_url = reverse("login")
+        response = self.client.post(
+            login_url,
+            data={"email": self.user_two.email, "password": self.password},
+            format="json",
+        )
+        token = json.loads(response.content).get("access")
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+
+    def test_authorized_get_followers(self) -> None:
+        url = reverse("following", kwargs={"id": self.user_two.id})
+        response = self.client.get(
+            url,
+            format="json",
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_unauthorized_get_followers(self) -> None:
+        url = reverse("following", kwargs={"id": self.user_one.id})
+        response = self.client.get(
+            url,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            json.loads(response.content).get("detail"),
+            "Authentication credentials were not provided.",
+        )
+
+    def test_authorized_user_follow(self) -> None:
+
+        followers = UserFollowing.objects.filter(followed=self.user_one.id)
+        self.assertNotIn(
+            self.user_two.id,
+            [follower.follower.id for follower in followers],  # type: ignore[union-attr]
+        )
+
+        url = reverse("follow")
+        response = self.client.post(
+            url,
+            data={"follow": self.user_one.id},
+            format="json",
+            **self.bearer_token,
+        )
+        follows = UserFollowing.objects.filter(followed=self.user_one.id)
+        self.assertIn(
+            self.user_two.id,
+            [follower.follower.id for follower in follows],  # type: ignore[union-attr]
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_authorized_user_unfollow(self) -> None:
+
+        followers = UserFollowing.objects.filter(followed=self.user_one.id)
+        self.assertNotIn(
+            self.user_two.id,
+            [follower.follower.id for follower in followers],  # type: ignore[union-attr]
+        )
+
+        url = reverse("follow")
+        response = self.client.post(
+            url,
+            data={"follow": self.user_one.id},
+            format="json",
+            **self.bearer_token,
+        )
+
+        url = reverse("unfollow", kwargs={"id": self.user_one.id})
+        response = self.client.delete(
+            url,
+            format="json",
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        follows = UserFollowing.objects.filter(followed=self.user_one.id)
+        self.assertNotIn(
+            self.user_two.id,
+            [follower.follower.id for follower in follows],  # type: ignore[union-attr]
+        )
+
+    def test_unauthorized_user_unfollow(self) -> None:
+        url = reverse("unfollow", kwargs={"id": self.user_one.id})
+        response = self.client.delete(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            json.loads(response.content).get("detail"),
+            "Authentication credentials were not provided.",
+        )
+
+    def test_unauthorized_user_follow(self) -> None:
+        url = reverse("follow")
+        response = self.client.post(
+            url,
+            data={"follow": self.user_one.id},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            json.loads(response.content).get("detail"),
+            "Authentication credentials were not provided.",
+        )
+
+    def test_user_cannot_follow_same_user(self) -> None:
+        url = reverse(
+            "follow",
+        )
+        self.client.post(
+            url,
+            data={"follow": self.user_two.id},
+            format="json",
+            **self.bearer_token,
+        )
+        response = self.client.post(
+            url,
+            data={"follow": self.user_two.id},
+            format="json",
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("You already following this user", str(response.data))

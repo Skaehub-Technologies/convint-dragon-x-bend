@@ -5,9 +5,12 @@ from rest_framework_simplejwt.views import (
 )
 
 from app.user.views import (
+    FollowersFollowingView,
+    FollowProfile,
     PasswordReset,
     ProfileDetailView,
     ProfileListView,
+    UnFollowProfile,
     UserRegister,
     UserView,
     VerifyEmailView,
@@ -36,4 +39,11 @@ urlpatterns = [
         VerifyPasswordReset.as_view(),
         name="verify-password-reset",
     ),
+    path(
+        "following/<str:id>/",
+        FollowersFollowingView.as_view(),
+        name="following",
+    ),
+    path("follow/", FollowProfile.as_view(), name="follow"),
+    path("unfollow/<str:id>/", UnFollowProfile.as_view(), name="unfollow"),
 ]
