@@ -1,3 +1,4 @@
+import math
 import uuid
 from typing import Any
 
@@ -39,6 +40,7 @@ class Article(TimeStampedModel):
         blank=True,
         default=0,
     )
+    reading_time = models.PositiveIntegerField(blank=True, null=True)
     author = models.ForeignKey(
         User, on_delete=models.SET_NULL, related_name="author", null=True
     )
@@ -54,6 +56,11 @@ class Article(TimeStampedModel):
 def slug_pre_save(sender: Any, instance: Any, **kwargs: Any) -> None:
     if instance.slug is None or instance.slug == "":
         instance.slug = slugify(f"{instance.title}-{instance.post_id}")
+
+
+@receiver(pre_save, sender=Article)
+def reading_time_pre_save(sender: Any, instance: Any, **kwargs: Any) -> None:
+    instance.reading_time = math.ceil(instance.body.count(" ") // 200)
 
 
 class ArticleBookmark(TimeStampedModel):

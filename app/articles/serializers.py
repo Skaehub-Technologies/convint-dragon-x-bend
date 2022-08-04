@@ -67,6 +67,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             "tags",
             "favouritesCount",
             "favourited",
+            "reading_time",
         )
 
     def create(self, validated_data: Any) -> Any:
