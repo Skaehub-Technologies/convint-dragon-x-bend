@@ -108,3 +108,74 @@ class TestArticleViews(TestCase):
             json.loads(response.content).get("detail"),
             "Authentication credentials were not provided.",
         )
+
+
+class TestBookmarkView(TestCase):
+    password: str
+    user: Any
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.password = fake.password()
+        cls.user = User.objects.create_user(
+            username=fake.name(), email=fake.email(), password=cls.password
+        )
+
+    @property
+    def bearer_token(self) -> dict:
+        login_url = reverse("login")
+        response = self.client.post(
+            login_url,
+            data={"email": self.user.email, "password": self.password},
+        )
+        token = json.loads(response.content).get("access")
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+
+    def test_bookmark_article(self) -> None:
+        """
+        Test if a user can bookmark an article
+        """
+        data = Article.objects.create(
+            post_id="9831040d-5eeb-4cd5-9054-d0f1770431ca",
+            title=fake.texts(nb_texts=2),
+            description=fake.paragraph(nb_sentences=3),
+            body=fake.paragraph(),
+        )
+
+        response = self.client.post(
+            reverse("bookmark"),
+            data={"article": data.post_id},
+            **self.bearer_token,
+        )
+        res_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res_data["article"], data.post_id)
+
+    def test_get_bookmark(self) -> None:
+        """
+        Test if user can get their bookmarks
+        """
+        data = Article.objects.create(
+            post_id="9831040d-5eeb-4cd5-9054-d0f1770431ca",
+            title=fake.texts(nb_texts=2),
+            description=fake.paragraph(nb_sentences=3),
+            body=fake.paragraph(),
+        )
+
+        response = self.client.post(
+            reverse("bookmark"),
+            data={"article": data.post_id},
+            **self.bearer_token,
+        )
+        res_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res_data["article"], data.post_id)
+
+        response = self.client.get(
+            reverse("bookmark"),
+            **self.bearer_token,
+        )
+        res = response.json().get("results")[0].get("article")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(res, data.post_id)

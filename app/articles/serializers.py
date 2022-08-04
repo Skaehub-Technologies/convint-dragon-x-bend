@@ -3,7 +3,7 @@ from typing import Any
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from app.articles.models import Article, Tag
+from app.articles.models import Article, ArticleBookmark, Tag
 from app.user.serializers import UserSerializer
 
 User = get_user_model()
@@ -19,7 +19,7 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ("name",)
 
 
-class ArticlesSerializers(serializers.ModelSerializer):
+class ArticleSerializer(serializers.ModelSerializer):
     post_id = serializers.CharField(
         read_only=True,
     )
@@ -81,3 +81,26 @@ class ArticlesSerializers(serializers.ModelSerializer):
         article.tags.set(tags)
 
         return article
+
+
+class ArticleBookmarkSerializer(serializers.ModelSerializer):
+    """
+    Bookmarks serializer
+    """
+
+    user = UserSerializer(read_only=True)
+    article = serializers.SlugRelatedField(
+        queryset=Article.objects.all(), slug_field="post_id"
+    )
+
+    class Meta:
+        model = ArticleBookmark
+        fields = ("article", "user")
+
+    def create(self, validated_data: Any) -> Any:
+        request = self.context["request"]
+
+        validated_data["user"] = request.user
+        instance, _ = ArticleBookmark.objects.get_or_create(**validated_data)
+
+        return instance
