@@ -6,10 +6,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from app.articles.models import Article, ArticleBookmark, ArticleRatings
+from app.articles.models import (
+    Article,
+    ArticleBookmark,
+    ArticleComment,
+    ArticleRatings,
+)
 from app.articles.permissions import IsOwnerOrReadOnly
 from app.articles.serializers import (
     ArticleBookmarkSerializer,
+    ArticleCommentSerializer,
     ArticleSerializer,
     RatingSerializer,
 )
@@ -56,6 +62,29 @@ class ArticleBookmarkView(generics.ListCreateAPIView):
     def get_queryset(self) -> Any:
         queryset = super().get_queryset()
         return queryset.filter(user=self.request.user)
+
+
+class ArticleCommentView(generics.ListCreateAPIView):
+    serializer_class = ArticleCommentSerializer
+    queryset = ArticleComment.objects.all()
+    permission_classes = [IsAuthenticated]
+
+
+class ArticleCommentDetailView(generics.RetrieveDestroyAPIView):
+    serializer_class = ArticleCommentSerializer
+    queryset = ArticleComment.objects.all()
+    permission_classes = [IsAuthenticated]
+    lookup_field = "comment_id"
+
+    def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Returns message on deletion of articles
+        """
+        self.destroy(request, *args, **kwargs)
+        return Response(
+            {"message": "Comment deleted successfully"},
+            status=status.HTTP_204_NO_CONTENT,
+        )
 
 
 class ArticleRatingsListCreateView(generics.ListCreateAPIView):
