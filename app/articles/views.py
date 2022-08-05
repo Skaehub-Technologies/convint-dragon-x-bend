@@ -6,11 +6,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from app.articles.models import Article, ArticleBookmark
-from app.articles.permissions import AuthorOrReadOnly
+from app.articles.models import Article, ArticleBookmark, ArticleRatings
+from app.articles.permissions import IsOwnerOrReadOnly
 from app.articles.serializers import (
     ArticleBookmarkSerializer,
     ArticleSerializer,
+    RatingSerializer,
 )
 
 
@@ -20,7 +21,7 @@ class ArticleListCreateView(generics.ListCreateAPIView):
 
     permission_classes = [
         IsAuthenticated,
-        AuthorOrReadOnly,
+        IsOwnerOrReadOnly,
     ]
 
     filterset_fields = ["title", "description", "body", "tags", "author"]
@@ -31,10 +32,7 @@ class ArticleListCreateView(generics.ListCreateAPIView):
 class ArticleDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_classes = [
-        IsAuthenticated,
-        AuthorOrReadOnly,
-    ]
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
     lookup_field = "slug"
 
     def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -58,3 +56,13 @@ class ArticleBookmarkView(generics.ListCreateAPIView):
     def get_queryset(self) -> Any:
         queryset = super().get_queryset()
         return queryset.filter(user=self.request.user)
+
+
+class ArticleRatingsListCreateView(generics.ListCreateAPIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsOwnerOrReadOnly,
+    ]
+
+    serializer_class = RatingSerializer
+    queryset = ArticleRatings.objects.all()
