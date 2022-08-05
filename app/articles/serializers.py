@@ -1,9 +1,11 @@
+from collections import Counter
 from typing import Any
 
 from django.contrib.auth import get_user_model
+from django.db.models import Avg
 from rest_framework import serializers
 
-from app.articles.models import Article, Tag
+from app.articles.models import Article, ArticleRatings, Tag
 from app.user.serializers import UserSerializer
 
 User = get_user_model()
@@ -19,7 +21,7 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ("name",)
 
 
-class ArticlesSerializers(serializers.ModelSerializer):
+class ArticleSerializer(serializers.ModelSerializer):
     post_id = serializers.CharField(
         read_only=True,
     )
@@ -35,6 +37,9 @@ class ArticlesSerializers(serializers.ModelSerializer):
     image = serializers.ImageField(use_url=True, required=False)
     body = serializers.CharField(
         min_length=20,
+    )
+    avg_rating = serializers.SerializerMethodField(
+        method_name="average_rating"
     )
     tags = serializers.SlugRelatedField(
         many=True,
@@ -59,6 +64,7 @@ class ArticlesSerializers(serializers.ModelSerializer):
             "favourited",
             "favouritesCount",
             "slug",
+            "avg_rating",
         )
         read_only_fields = (
             "created_at",
@@ -81,3 +87,51 @@ class ArticlesSerializers(serializers.ModelSerializer):
         article.tags.set(tags)
 
         return article
+
+    def average_rating(self, instance):  # type: ignore[no-untyped-def]
+        avg_rating = (
+            ArticleRatings.objects.filter(article=instance).aggregate(
+                average_rating=Avg("rating")
+            )["average_rating"]
+            or 0
+        )
+        avg_rating = round(avg_rating)
+        total_user_rates = ArticleRatings.objects.filter(
+            article=instance
+        ).count()
+        each_rating = Counter(
+            ArticleRatings.objects.filter(article=instance).values_list(
+                "rating", flat=True
+            )
+        )
+
+        return {
+            "avg_rating": avg_rating,
+            "total_user_rates": total_user_rates,
+            "each_rating": each_rating,
+        }
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    """
+    create and update existing ratings for our articles
+    """
+
+    rating = serializers.IntegerField(max_value=5, min_value=0)
+    rated_by = UserSerializer(read_only=True)
+    article = serializers.SlugRelatedField(
+        queryset=Article.objects.all(), slug_field="post_id"
+    )
+
+    class Meta:
+        model = ArticleRatings
+        fields = ["rating", "rated_by", "article"]
+        read_only_fields = ["rated_by"]
+
+    def create(self, validated_data: Any) -> Any:
+        request = self.context["request"]
+
+        validated_data["rated_by"] = request.user
+        instance = ArticleRatings.objects.create(**validated_data)
+
+        return instance

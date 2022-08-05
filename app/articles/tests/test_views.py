@@ -108,3 +108,58 @@ class TestArticleViews(TestCase):
             json.loads(response.content).get("detail"),
             "Authentication credentials were not provided.",
         )
+
+
+class TestArticleRatingView(TestCase):
+    password: str
+    user: Any
+    article: Any
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.password = fake.password()
+        cls.user = User.objects.create_user(
+            username=fake.name(), email=fake.email(), password=cls.password
+        )
+        cls.article = Article.objects.create(
+            title=fake.texts(nb_texts=1),
+            description=fake.paragraph(nb_sentences=1),
+            body=fake.paragraph(),
+        )
+
+    @property
+    def bearer_token(self) -> dict:
+        login_url = reverse("login")
+        response = self.client.post(
+            login_url,
+            data={"email": self.user.email, "password": self.password},
+        )
+        token = json.loads(response.content).get("access")
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+
+    def test_rate_article(self) -> None:
+        """
+        Test if a user can Rate an article
+        """
+        response = self.client.post(
+            reverse("rate"),
+            data={"article": self.article.post_id, "rating": 1},
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data.get("article"), self.article.post_id)  # type: ignore[attr-defined]
+
+    def test_rate_article_unauthorized(self) -> None:
+        """
+        Test if a user can Rate an article
+        """
+        response = self.client.post(
+            reverse("rate"),
+            data={"article": self.article.post_id, "rating": 1},
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            json.loads(response.content).get("detail"),
+            "Authentication credentials were not provided.",
+        )

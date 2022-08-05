@@ -25,7 +25,7 @@ class Article(TimeStampedModel):
         default=uuid.uuid4,
         editable=False,
         unique=True,
-        max_length=255,
+        max_length=400,
         primary_key=True,
     )
     slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
@@ -54,3 +54,13 @@ class Article(TimeStampedModel):
 def slug_pre_save(sender: Any, instance: Any, **kwargs: Any) -> None:
     if instance.slug is None or instance.slug == "":
         instance.slug = slugify(f"{instance.title}-{instance.post_id}")
+
+
+class ArticleRatings(models.Model):
+    """
+    Ratings given by different users
+    """
+
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    rating = models.IntegerField(default=0)
+    rated_by = models.ForeignKey(User, on_delete=models.CASCADE)
