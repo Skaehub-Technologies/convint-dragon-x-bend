@@ -28,7 +28,7 @@ class Article(TimeStampedModel):
         max_length=400,
         primary_key=True,
     )
-    slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
+    slug = models.SlugField(max_length=400, unique=True, blank=True, null=True)
     title = models.CharField(max_length=400, blank=False, null=False)
     image = CloudinaryField("post_images", blank=True, null=True)
     description = models.CharField(max_length=500, blank=True, null=True)
@@ -64,3 +64,10 @@ class ArticleRatings(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
     rating = models.IntegerField(default=0)
     rated_by = models.ForeignKey(User, on_delete=models.CASCADE)
+class ArticleBookmark(TimeStampedModel):
+    """
+    Bookmark model to store the articles bookmarked by a reader
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)

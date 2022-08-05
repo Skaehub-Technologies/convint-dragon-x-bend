@@ -6,6 +6,7 @@ from django.db.models import Avg
 from rest_framework import serializers
 
 from app.articles.models import Article, ArticleRatings, Tag
+from app.articles.models import Article, ArticleBookmark, Tag
 from app.user.serializers import UserSerializer
 
 User = get_user_model()
@@ -119,6 +120,13 @@ class RatingSerializer(serializers.ModelSerializer):
 
     rating = serializers.IntegerField(max_value=5, min_value=0)
     rated_by = UserSerializer(read_only=True)
+
+class ArticleBookmarkSerializer(serializers.ModelSerializer):
+    """
+    Bookmarks serializer
+    """
+
+    user = UserSerializer(read_only=True)
     article = serializers.SlugRelatedField(
         queryset=Article.objects.all(), slug_field="post_id"
     )
@@ -127,11 +135,15 @@ class RatingSerializer(serializers.ModelSerializer):
         model = ArticleRatings
         fields = ["rating", "rated_by", "article"]
         read_only_fields = ["rated_by"]
+        model = ArticleBookmark
+        fields = ("article", "user")
 
     def create(self, validated_data: Any) -> Any:
         request = self.context["request"]
 
         validated_data["rated_by"] = request.user
         instance = ArticleRatings.objects.create(**validated_data)
+        validated_data["user"] = request.user
+        instance, _ = ArticleBookmark.objects.get_or_create(**validated_data)
 
         return instance
