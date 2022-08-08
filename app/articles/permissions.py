@@ -5,7 +5,7 @@ from rest_framework.request import Request
 from rest_framework.views import APIView
 
 
-class AuthorOrReadOnly(permissions.BasePermission):
+class IsOwnerOrReadOnly(permissions.BasePermission):
     def has_permission(self, request: Request, view: APIView) -> bool:
         return bool(request.user.is_authenticated)
 

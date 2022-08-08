@@ -70,3 +70,13 @@ class ArticleBookmark(TimeStampedModel):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
+
+
+class ArticleRatings(models.Model):
+    """
+    Ratings given by different users
+    """
+
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    rating = models.IntegerField(default=0)
+    rated_by = models.ForeignKey(User, on_delete=models.CASCADE)
