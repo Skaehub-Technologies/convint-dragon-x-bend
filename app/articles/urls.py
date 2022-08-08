@@ -2,6 +2,8 @@ from django.urls import path
 
 from app.articles.views import (
     ArticleBookmarkView,
+    ArticleCommentDetailView,
+    ArticleCommentView,
     ArticleDetailView,
     ArticleListCreateView,
     ArticleRatingsListCreateView,
@@ -15,5 +17,11 @@ urlpatterns = [
         name="article-detail",
     ),
     path("bookmarks/", ArticleBookmarkView.as_view(), name="bookmark"),
+    path("comments/", ArticleCommentView.as_view(), name="comment"),
+    path(
+        "comments/<str:comment_id>/",
+        ArticleCommentDetailView.as_view(),
+        name="comment-delete",
+    ),
     path("rate/", ArticleRatingsListCreateView.as_view(), name="rate"),
 ]

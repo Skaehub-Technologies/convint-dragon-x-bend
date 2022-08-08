@@ -8,7 +8,7 @@ from django.urls import reverse
 from faker import Faker
 from rest_framework import status
 
-from app.articles.models import Article
+from app.articles.models import Article, ArticleComment
 
 from .mocks import sample_image
 
@@ -111,8 +111,13 @@ class TestArticleViews(TestCase):
 
 
 class TestBookmarkView(TestCase):
+    """
+    Test for article bookmarks
+    """
+
     password: str
     user: Any
+    article: Any
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -120,6 +125,11 @@ class TestBookmarkView(TestCase):
         cls.password = fake.password()
         cls.user = User.objects.create_user(
             username=fake.name(), email=fake.email(), password=cls.password
+        )
+        cls.article = Article.objects.create(
+            title=fake.texts(nb_texts=1),
+            description=fake.paragraph(nb_sentences=1),
+            body=fake.paragraph(),
         )
 
     @property
@@ -136,49 +146,101 @@ class TestBookmarkView(TestCase):
         """
         Test if a user can bookmark an article
         """
-        data = Article.objects.create(
-            post_id="9831040d-5eeb-4cd5-9054-d0f1770431ca",
-            title=fake.texts(nb_texts=2),
-            description=fake.paragraph(nb_sentences=3),
-            body=fake.paragraph(),
-        )
 
         response = self.client.post(
             reverse("bookmark"),
-            data={"article": data.post_id},
+            data={"article": self.article.post_id},
             **self.bearer_token,
         )
-        res_data = response.json()
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(res_data["article"], data.post_id)
+        self.assertEqual(response.data.get("article"), self.article.post_id)  # type: ignore[attr-defined]
 
     def test_get_bookmark(self) -> None:
         """
         Test if user can get their bookmarks
         """
-        data = Article.objects.create(
-            post_id="9831040d-5eeb-4cd5-9054-d0f1770431ca",
-            title=fake.texts(nb_texts=2),
-            description=fake.paragraph(nb_sentences=3),
-            body=fake.paragraph(),
-        )
 
         response = self.client.post(
             reverse("bookmark"),
-            data={"article": data.post_id},
+            data={"article": self.article.post_id},
             **self.bearer_token,
         )
-        res_data = response.json()
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(res_data["article"], data.post_id)
+        self.assertEqual(response.data.get("article"), self.article.post_id)  # type: ignore[attr-defined]
 
         response = self.client.get(
             reverse("bookmark"),
             **self.bearer_token,
         )
-        res = response.json().get("results")[0].get("article")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(res, data.post_id)
+
+
+class TestArticleCommentView(TestCase):
+    """
+    Test for articles app views
+    """
+
+    password: str
+    user: Any
+    article: Any
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.password = fake.password()
+        cls.user = User.objects.create_user(
+            username=fake.name(), email=fake.email(), password=cls.password
+        )
+        cls.article = Article.objects.create(
+            title=fake.texts(nb_texts=1),
+            description=fake.paragraph(nb_sentences=1),
+            body=fake.paragraph(),
+        )
+
+    @property
+    def bearer_token(self) -> dict:
+        login_url = reverse("login")
+        response = self.client.post(
+            login_url,
+            data={"email": self.user.email, "password": self.password},
+        )
+        token = json.loads(response.content).get("access")
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+
+    def test_comment_an_article(self) -> None:
+        """
+        Test if a user can make a comment
+        """
+        count = ArticleComment.objects.count()
+        response = self.client.post(
+            reverse("comment"),
+            data={
+                "article": self.article.post_id,
+                "comment": "Great work",
+            },
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(ArticleComment.objects.count(), count + 1)
+
+    def test_delete_article_comment(self) -> None:
+        """
+        Test if a user can delete their comments
+        """
+        data = ArticleComment.objects.create(
+            commenter=self.user,
+            comment="Great work",
+            article=Article.objects.create(),
+        )
+
+        count = ArticleComment.objects.count()
+        response = self.client.delete(
+            reverse("comment-delete", kwargs={"comment_id": data.comment_id}),
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(ArticleComment.objects.count(), count - 1)
 
 
 class TestArticleRatingView(TestCase):

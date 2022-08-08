@@ -5,7 +5,13 @@ from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from rest_framework import serializers
 
-from app.articles.models import Article, ArticleBookmark, ArticleRatings, Tag
+from app.articles.models import (
+    Article,
+    ArticleBookmark,
+    ArticleComment,
+    ArticleRatings,
+    Tag,
+)
 from app.user.serializers import UserSerializer
 
 User = get_user_model()
@@ -54,6 +60,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         model = Article
         fields = (
             "post_id",
+            "reading_time",
             "author",
             "title",
             "description",
@@ -133,6 +140,34 @@ class ArticleBookmarkSerializer(serializers.ModelSerializer):
         validated_data["user"] = request.user
         instance, _ = ArticleBookmark.objects.get_or_create(**validated_data)
 
+        return instance
+
+
+class ArticleCommentSerializer(serializers.ModelSerializer):
+    """
+    Comment and highlighting serializer
+    """
+
+    commenter = UserSerializer(read_only=True)
+
+    class Meta:
+        model = ArticleComment
+        fields = (
+            "comment_id",
+            "commenter",
+            "comment",
+            "article",
+        )
+        read_only_fields = (
+            "created_at",
+            "commenter",
+            "comment_id",
+        )
+
+    def create(self, validated_data: Any) -> Any:
+        request = self.context["request"]
+        validated_data["commenter"] = request.user
+        instance = ArticleComment.objects.create(**validated_data)
         return instance
 
 
