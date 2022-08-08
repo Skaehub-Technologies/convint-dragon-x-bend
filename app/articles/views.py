@@ -3,6 +3,7 @@ from typing import Any
 from rest_framework import generics, status
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -11,7 +12,9 @@ from app.articles.permissions import IsOwnerOrReadOnly
 from app.articles.serializers import (
     ArticleBookmarkSerializer,
     ArticleSerializer,
+    FavouriteSerializer,
     RatingSerializer,
+    UnFavouriteSerializer,
 )
 
 
@@ -66,3 +69,19 @@ class ArticleRatingsListCreateView(generics.ListCreateAPIView):
 
     serializer_class = RatingSerializer
     queryset = ArticleRatings.objects.all()
+
+
+class ArticleFavouriteView(generics.UpdateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = FavouriteSerializer
+    queryset = Article.objects.all()
+    lookup_field = "slug"
+    renderer_classes = (JSONRenderer,)
+
+
+class ArticleUnFavouriteView(generics.UpdateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UnFavouriteSerializer
+    queryset = Article.objects.all()
+    lookup_field = "slug"
+    renderer_classes = (JSONRenderer,)

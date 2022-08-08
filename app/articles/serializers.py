@@ -49,6 +49,8 @@ class ArticleSerializer(serializers.ModelSerializer):
     avg_rating = serializers.SerializerMethodField(
         method_name="average_rating"
     )
+    favourite_count = serializers.SerializerMethodField()
+    unfavourite_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Article
@@ -61,18 +63,16 @@ class ArticleSerializer(serializers.ModelSerializer):
             "body",
             "tags",
             "taglist",
-            "favourited",
-            "favouritesCount",
             "slug",
             "avg_rating",
+            "favourite_count",
+            "unfavourite_count",
         )
         read_only_fields = (
             "created_at",
             "updated_at",
             "author",
             "tags",
-            "favouritesCount",
-            "favourited",
             "reading_time",
         )
 
@@ -111,6 +111,12 @@ class ArticleSerializer(serializers.ModelSerializer):
             "total_user_rates": total_user_rates,
             "each_rating": each_rating,
         }
+
+    def get_favourite_count(self, instance: Any) -> Any:
+        return instance.favourite.count()
+
+    def get_unfavourite_count(self, instance: Any) -> Any:
+        return instance.unfavourite.count()
 
 
 class ArticleBookmarkSerializer(serializers.ModelSerializer):
@@ -158,4 +164,34 @@ class RatingSerializer(serializers.ModelSerializer):
         validated_data["rated_by"] = request.user
         instance = ArticleRatings.objects.create(**validated_data)
 
+        return instance
+
+
+class FavouriteSerializer(serializers.Serializer):
+    def update(self, instance: Any, validated_data: Any) -> Any:
+        """
+        update the favourites of an article
+        """
+        request = self.context.get("request")
+
+        if request.user in instance.favourite.all():  # type: ignore[union-attr]
+            instance.favourite.remove(request.user)  # type: ignore[union-attr]
+            return instance
+        if request.user in instance.unfavourite.all():  # type: ignore[union-attr]
+            instance.unfavourite.remove(request.user)  # type: ignore[union-attr]
+        instance.favourite.add(request.user)  # type: ignore[union-attr]
+        return instance
+
+
+class UnFavouriteSerializer(serializers.Serializer):
+    def update(self, instance: Any, validated_data: Any) -> Any:
+        """update the unfavourites of an article"""
+        request = self.context.get("request")
+
+        if request.user in instance.unfavourite.all():  # type: ignore[union-attr]
+            instance.unfavourite.remove(request.user)  # type: ignore[union-attr]
+            return instance
+        if request.user in instance.favourite.all():  # type: ignore[union-attr]
+            instance.favourite.remove(request.user)  # type: ignore[union-attr]
+        instance.unfavourite.add(request.user)  # type: ignore[union-attr]
         return instance
