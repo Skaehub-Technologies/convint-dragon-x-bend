@@ -9,6 +9,7 @@ from app.articles.models import (
     Article,
     ArticleBookmark,
     ArticleComment,
+    ArticleHighlight,
     ArticleRatings,
     Tag,
 )
@@ -74,6 +75,8 @@ class ArticleSerializer(serializers.ModelSerializer):
             "avg_rating",
             "favourite_count",
             "unfavourite_count",
+            "created_at",
+            "updated_at",
         )
         read_only_fields = (
             "created_at",
@@ -159,15 +162,16 @@ class ArticleCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ArticleComment
         fields = (
-            "comment_id",
+            "id",
             "commenter",
             "comment",
             "article",
+            "created_at",
         )
         read_only_fields = (
             "created_at",
             "commenter",
-            "comment_id",
+            "id",
         )
 
     def create(self, validated_data: Any) -> Any:
@@ -230,3 +234,73 @@ class UnFavouriteSerializer(serializers.Serializer):
             instance.favourite.remove(request.user)  # type: ignore[union-attr]
         instance.unfavourite.add(request.user)  # type: ignore[union-attr]
         return instance
+
+
+class TextHighlightSerializer(serializers.ModelSerializer):
+    """
+    Highlights model serializer
+    """
+
+    highlighter = UserSerializer(read_only=True)
+    article = serializers.SlugRelatedField(
+        queryset=Article.objects.all(), slug_field="post_id"
+    )
+    highlight_start = serializers.IntegerField(
+        min_value=0,
+    )
+    highlight_end = serializers.IntegerField(
+        min_value=0,
+    )
+    highlight_text = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = ArticleHighlight
+        fields = (
+            "id",
+            "comment",
+            "article",
+            "highlighter",
+            "highlight_start",
+            "highlight_end",
+            "highlight_text",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = (
+            "highlighter",
+            "id",
+            "created_at",
+            "updated_at",
+        )
+
+    def validate(self, data: Any) -> Any:
+
+        article = data.get("article")
+        if data.get("highlight_start") > len(article.body):
+            raise serializers.ValidationError(
+                {
+                    "highlight_start": "This field should be less than the length of the article"
+                },
+                code="invalid_length",
+            )
+        if data.get("highlight_end") > len(article.body):
+            raise serializers.ValidationError(
+                {
+                    "highlight_end": "This field should be less than the length of the article"
+                },
+                code="invalid_length",
+            )
+
+        return data
+
+    def create(self, validated_data: Any) -> Any:
+        article = validated_data.get("article")
+        validated_data["highlighter"] = self.context.get("request").user  # type: ignore[union-attr]
+        start = validated_data.get("highlight_start")
+        end = validated_data.get("highlight_end")
+        if start > end:
+            start, end = end, start
+            highlight_text = str(article.body[start:end])
+            validated_data["highlight_text"] = highlight_text
+
+        return super().create(validated_data)
