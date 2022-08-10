@@ -35,12 +35,17 @@ class Article(TimeStampedModel):
     description = models.CharField(max_length=500, blank=True, null=True)
     body = models.TextField()
     tags = models.ManyToManyField(Tag, blank=True, related_name="tags")
-    favourited = models.BooleanField(null=True)
     favouritesCount = models.BigIntegerField(
         blank=True,
         default=0,
     )
     reading_time = models.PositiveIntegerField(blank=True, null=True)
+    favourite = models.ManyToManyField(
+        User, related_name="favourite", blank=True
+    )
+    unfavourite = models.ManyToManyField(
+        User, related_name="unfavourite", blank=True
+    )
     author = models.ForeignKey(
         User, on_delete=models.SET_NULL, related_name="author", null=True
     )

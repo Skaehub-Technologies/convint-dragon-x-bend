@@ -18,7 +18,6 @@ class TestArticleModels(TestCase):
             "description": fake.text(),
             "body": fake.text(),
             "image": fake.image_url(),
-            "favourited": False,
             "favouritesCount": 0,
         }
 
@@ -31,7 +30,6 @@ class TestArticleModels(TestCase):
         self.assertEqual(article.description, self.data["description"])
         self.assertEqual(article.body, self.data["body"])
         self.assertEqual(article.image, self.data["image"])
-        self.assertEqual(article.favourited, self.data["favourited"])
         self.assertEqual(article.favouritesCount, self.data["favouritesCount"])
 
     def test_str_article(self) -> None:

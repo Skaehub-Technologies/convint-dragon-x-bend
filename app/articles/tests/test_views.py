@@ -327,3 +327,144 @@ class TestArticleRatingView(TestCase):
             json.loads(response.content).get("detail"),
             "Authentication credentials were not provided.",
         )
+
+
+class TestArticleFavouriteUnfavouriteView(TestCase):
+    password: str
+    user: Any
+    article: Any
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.password = fake.password()
+        cls.user = User.objects.create_user(
+            username=fake.name(), email=fake.email(), password=cls.password
+        )
+        cls.article = Article.objects.create(
+            title=fake.texts(nb_texts=1),
+            description=fake.paragraph(nb_sentences=1),
+            body=fake.paragraph(),
+        )
+
+    @property
+    def bearer_token(self) -> dict:
+        login_url = reverse("login")
+        response = self.client.post(
+            login_url,
+            data={"email": self.user.email, "password": self.password},
+        )
+        token = json.loads(response.content).get("access")
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+
+    def test_favourite_article(self) -> None:
+        """test favourite an article"""
+        favourite = self.article.favourite.count()
+        response = self.client.patch(
+            reverse("favourite", kwargs={"slug": self.article.slug}),
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.article.favourite.count(), favourite + 1)
+
+    def test_favourite_article_unauthorized(self) -> None:
+        """
+        test favourite an article without authentication
+        """
+        response = self.client.patch(
+            reverse("favourite", kwargs={"slug": self.article.slug}),
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            json.loads(response.content).get("detail"),
+            "Authentication credentials were not provided.",
+        )
+
+    def test_unfavourite_article(self) -> None:
+        """test unfavourite an article"""
+        unfavourite = self.article.unfavourite.count()
+        response = self.client.patch(
+            reverse("unfavourite", kwargs={"slug": self.article.slug}),
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.article.unfavourite.count(), unfavourite + 1)
+
+    def test_unfavourite_article_unauthorized(self) -> None:
+        """
+        test unfavourite an article without authentication
+        """
+        response = self.client.patch(
+            reverse("unfavourite", kwargs={"slug": self.article.slug}),
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            json.loads(response.content).get("detail"),
+            "Authentication credentials were not provided.",
+        )
+
+    def test_favourite_twice_article(self) -> None:
+        """test favourite an article"""
+        favourite = self.article.favourite.count()
+        response = self.client.patch(
+            reverse("favourite", kwargs={"slug": self.article.slug}),
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.article.favourite.count(), favourite + 1)
+        response = self.client.patch(
+            reverse("favourite", kwargs={"slug": self.article.slug}),
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.article.favourite.count(), favourite)
+
+    def test_unfavourite_twice_article(self) -> None:
+        """test unfavourite an article"""
+        unfavourite = self.article.unfavourite.count()
+        response = self.client.patch(
+            reverse("unfavourite", kwargs={"slug": self.article.slug}),
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.article.unfavourite.count(), unfavourite + 1)
+        response = self.client.patch(
+            reverse("unfavourite", kwargs={"slug": self.article.slug}),
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.article.unfavourite.count(), unfavourite)
+
+    def test_favourite_article_unfavourite_article(self) -> None:
+        """test favourite an article"""
+        favourite = self.article.favourite.count()
+        response = self.client.patch(
+            reverse("favourite", kwargs={"slug": self.article.slug}),
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.article.favourite.count(), favourite + 1)
+        unfavourite = self.article.unfavourite.count()
+        response = self.client.patch(
+            reverse("unfavourite", kwargs={"slug": self.article.slug}),
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.article.unfavourite.count(), unfavourite + 1)
+
+    def test_unfavourite_article_favourite_article(self) -> None:
+        """test unfavourite an article"""
+        unfavourite = self.article.unfavourite.count()
+        response = self.client.patch(
+            reverse("unfavourite", kwargs={"slug": self.article.slug}),
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.article.unfavourite.count(), unfavourite + 1)
+        favourite = self.article.favourite.count()
+        response = self.client.patch(
+            reverse("favourite", kwargs={"slug": self.article.slug}),
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.article.favourite.count(), favourite + 1)
