@@ -57,6 +57,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     )
     favourite_count = serializers.SerializerMethodField()
     unfavourite_count = serializers.SerializerMethodField()
+    views = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Article
@@ -74,6 +75,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             "avg_rating",
             "favourite_count",
             "unfavourite_count",
+            "views",
         )
         read_only_fields = (
             "created_at",
@@ -81,6 +83,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             "author",
             "tags",
             "reading_time",
+            "views",
         )
 
     def create(self, validated_data: Any) -> Any:
@@ -230,3 +233,52 @@ class UnFavouriteSerializer(serializers.Serializer):
             instance.favourite.remove(request.user)  # type: ignore[union-attr]
         instance.unfavourite.add(request.user)  # type: ignore[union-attr]
         return instance
+
+
+class ArticleStatSerializer(serializers.ModelSerializer):
+    """
+    Serializer class for reading stats
+    """
+
+    view_count = serializers.SerializerMethodField()
+    comment_count = serializers.SerializerMethodField()
+    favourite_count = serializers.SerializerMethodField()
+    unfavourite_count = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+    bookmark_count = serializers.SerializerMethodField()
+
+    def get_comment_count(self, instance: Any) -> Any:
+        return ArticleComment.objects.filter(article=instance).count()
+
+    def get_bookmark_count(self, instance: Any) -> Any:
+        return ArticleBookmark.objects.filter(article=instance).count()
+
+    def get_view_count(self, instance: Any) -> Any:
+        return instance.views
+
+    def get_favourite_count(self, instance: Any) -> Any:
+        return instance.favourite.count()
+
+    def get_unfavourite_count(self, instance: Any) -> Any:
+        return instance.unfavourite.count()
+
+    def get_average_rating(self, instance: Any) -> Any:
+        return (
+            ArticleRatings.objects.filter(article=instance).aggregate(
+                average_rating=Avg("rating")
+            )["average_rating"]
+            or 0
+        )
+
+    class Meta:
+        model = Article
+        fields = [
+            "slug",
+            "title",
+            "view_count",
+            "comment_count",
+            "bookmark_count",
+            "favourite_count",
+            "unfavourite_count",
+            "average_rating",
+        ]

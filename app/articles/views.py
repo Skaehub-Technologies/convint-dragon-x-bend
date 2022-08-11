@@ -18,6 +18,7 @@ from app.articles.serializers import (
     ArticleBookmarkSerializer,
     ArticleCommentSerializer,
     ArticleSerializer,
+    ArticleStatSerializer,
     FavouriteSerializer,
     RatingSerializer,
     UnFavouriteSerializer,
@@ -114,3 +115,14 @@ class ArticleUnFavouriteView(generics.UpdateAPIView):
     queryset = Article.objects.all()
     lookup_field = "slug"
     renderer_classes = (JSONRenderer,)
+
+
+class ArticleStatsView(generics.ListCreateAPIView):
+    serializer_class = ArticleStatSerializer
+    queryset = Article.objects.all()
+    renderer_classes = (JSONRenderer,)
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+
+    def get_queryset(self) -> Any:
+        queryset = super().get_queryset()
+        return queryset.filter(author=self.request.user)

@@ -46,6 +46,7 @@ class Article(TimeStampedModel):
     unfavourite = models.ManyToManyField(
         User, related_name="unfavourite", blank=True
     )
+    views = models.IntegerField(null=True, default=0)
     author = models.ForeignKey(
         User, on_delete=models.SET_NULL, related_name="author", null=True
     )

@@ -8,6 +8,7 @@ from app.articles.views import (
     ArticleFavouriteView,
     ArticleListCreateView,
     ArticleRatingsListCreateView,
+    ArticleStatsView,
     ArticleUnFavouriteView,
 )
 
@@ -36,4 +37,5 @@ urlpatterns = [
         ArticleUnFavouriteView.as_view(),
         name="unfavourite",
     ),
+    path("statistics/", ArticleStatsView.as_view(), name="article-stats"),
 ]
