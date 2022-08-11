@@ -9,6 +9,8 @@ from app.articles.views import (
     ArticleListCreateView,
     ArticleRatingsListCreateView,
     ArticleUnFavouriteView,
+    HighlightArticleListCreateView,
+    HiglightDetailView,
 )
 
 urlpatterns = [
@@ -21,7 +23,7 @@ urlpatterns = [
     path("bookmarks/", ArticleBookmarkView.as_view(), name="bookmark"),
     path("comments/", ArticleCommentView.as_view(), name="comment"),
     path(
-        "comments/<str:comment_id>/",
+        "comments/<str:id>/",
         ArticleCommentDetailView.as_view(),
         name="comment-delete",
     ),
@@ -35,5 +37,15 @@ urlpatterns = [
         "articles/<slug:slug>/unfavourite/",
         ArticleUnFavouriteView.as_view(),
         name="unfavourite",
+    ),
+    path(
+        "highlight/",
+        HighlightArticleListCreateView.as_view(),
+        name="highlight",
+    ),
+    path(
+        "highlight/<str:id>/",
+        HiglightDetailView.as_view(),
+        name="highlight-detail",
     ),
 ]

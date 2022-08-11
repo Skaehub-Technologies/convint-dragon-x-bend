@@ -9,7 +9,7 @@ from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils.text import slugify
 
-from app.abstracts import TimeStampedModel
+from app.abstracts import TimeStampedModel, UniversalIdModel
 
 User = get_user_model()
 
@@ -77,24 +77,33 @@ class ArticleBookmark(TimeStampedModel):
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
 
 
-class ArticleComment(TimeStampedModel):
+class ArticleComment(TimeStampedModel, UniversalIdModel):
     """
     Comment model to store comments made on articles
     """
 
-    comment_id = models.UUIDField(
-        default=uuid.uuid4,
-        editable=False,
-        unique=True,
-        max_length=255,
-        primary_key=True,
-    )
     commenter = models.ForeignKey(User, on_delete=models.CASCADE)
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
     comment = models.TextField()
 
     class Meta:
         ordering = ["created_at"]
+
+
+class ArticleHighlight(TimeStampedModel, UniversalIdModel):
+    """
+    Highlights for any text
+    """
+
+    highlight_start = models.PositiveIntegerField()
+    highlight_end = models.PositiveIntegerField()
+    highlight_text = models.TextField()
+    comment = models.TextField()
+    highlighter = models.ForeignKey(User, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ["-created_at"]
 
 
 class ArticleRatings(models.Model):
