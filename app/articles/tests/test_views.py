@@ -605,3 +605,51 @@ class TestArticleHighlightView(TestCase):
             "This field should be less than the length of the article",
             str(response.json()),
         )
+
+
+class TestArticleStatsView(TestCase):
+    """
+    Tests for highlighting text article
+    """
+
+    password: str
+    user: Any
+    article: Any
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.password = fake.password()
+        cls.user = User.objects.create_user(
+            username=fake.name(), email=fake.email(), password=cls.password
+        )
+        cls.article = Article.objects.create(
+            title=fake.texts(nb_texts=1),
+            description=fake.paragraph(nb_sentences=1),
+            body=fake.paragraph(),
+        )
+
+    @property
+    def bearer_token(self) -> dict:
+        login_url = reverse("login")
+        response = self.client.post(
+            login_url,
+            data={"email": self.user.email, "password": self.password},
+        )
+        token = json.loads(response.content).get("access")
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+
+    def test_get_bookmark_count(self) -> None:
+        """
+        Test if user can get their bookmarks count
+        """
+        response = self.client.get(
+            reverse("bookmark"),
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.get(
+            reverse("article-stats"),
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
