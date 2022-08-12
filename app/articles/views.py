@@ -118,6 +118,7 @@ class ArticleUnFavouriteView(generics.UpdateAPIView):
     lookup_field = "slug"
     renderer_classes = (JSONRenderer,)
 
+
 class ArticleStatsView(generics.ListCreateAPIView):
     serializer_class = ArticleStatSerializer
     queryset = Article.objects.all()
@@ -127,6 +128,8 @@ class ArticleStatsView(generics.ListCreateAPIView):
     def get_queryset(self) -> Any:
         queryset = super().get_queryset()
         return queryset.filter(author=self.request.user)
+
+
 class HighlightArticleListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = TextHighlightSerializer

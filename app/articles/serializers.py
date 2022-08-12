@@ -238,6 +238,7 @@ class UnFavouriteSerializer(serializers.Serializer):
         instance.unfavourite.add(request.user)  # type: ignore[union-attr]
         return instance
 
+
 class ArticleStatSerializer(serializers.ModelSerializer):
     """
     Serializer class for reading stats
@@ -285,6 +286,8 @@ class ArticleStatSerializer(serializers.ModelSerializer):
             "unfavourite_count",
             "average_rating",
         ]
+
+
 class TextHighlightSerializer(serializers.ModelSerializer):
     """
     Highlights model serializer
@@ -353,4 +356,3 @@ class TextHighlightSerializer(serializers.ModelSerializer):
             validated_data["highlight_text"] = highlight_text
 
         return super().create(validated_data)
-
