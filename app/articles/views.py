@@ -11,6 +11,7 @@ from app.articles.models import (
     Article,
     ArticleBookmark,
     ArticleComment,
+    ArticleHighlight,
     ArticleRatings,
 )
 from app.articles.permissions import IsOwnerOrReadOnly
@@ -21,6 +22,7 @@ from app.articles.serializers import (
     ArticleStatSerializer,
     FavouriteSerializer,
     RatingSerializer,
+    TextHighlightSerializer,
     UnFavouriteSerializer,
 )
 
@@ -78,11 +80,11 @@ class ArticleCommentDetailView(generics.RetrieveDestroyAPIView):
     serializer_class = ArticleCommentSerializer
     queryset = ArticleComment.objects.all()
     permission_classes = [IsAuthenticated]
-    lookup_field = "comment_id"
+    lookup_field = "id"
 
     def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
-        Returns message on deletion of articles
+        Returns message on deletion of comments
         """
         self.destroy(request, *args, **kwargs)
         return Response(
@@ -116,7 +118,6 @@ class ArticleUnFavouriteView(generics.UpdateAPIView):
     lookup_field = "slug"
     renderer_classes = (JSONRenderer,)
 
-
 class ArticleStatsView(generics.ListCreateAPIView):
     serializer_class = ArticleStatSerializer
     queryset = Article.objects.all()
@@ -126,3 +127,24 @@ class ArticleStatsView(generics.ListCreateAPIView):
     def get_queryset(self) -> Any:
         queryset = super().get_queryset()
         return queryset.filter(author=self.request.user)
+class HighlightArticleListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TextHighlightSerializer
+    queryset = ArticleHighlight.objects.all()
+
+
+class HiglightDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TextHighlightSerializer
+    queryset = ArticleHighlight.objects.all()
+    lookup_field = "id"
+
+    def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Returns message on deletion of highlights
+        """
+        self.destroy(request, *args, **kwargs)
+        return Response(
+            {"message": "Highlight comment deleted successfully"},
+            status=status.HTTP_204_NO_CONTENT,
+        )

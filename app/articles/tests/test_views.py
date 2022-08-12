@@ -8,7 +8,7 @@ from django.urls import reverse
 from faker import Faker
 from rest_framework import status
 
-from app.articles.models import Article, ArticleComment
+from app.articles.models import Article, ArticleComment, ArticleHighlight
 
 from .mocks import sample_image
 
@@ -236,7 +236,7 @@ class TestArticleCommentView(TestCase):
 
         count = ArticleComment.objects.count()
         response = self.client.delete(
-            reverse("comment-delete", kwargs={"comment_id": data.comment_id}),
+            reverse("comment-delete", kwargs={"id": data.id}),
             **self.bearer_token,
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -330,6 +330,10 @@ class TestArticleRatingView(TestCase):
 
 
 class TestArticleFavouriteUnfavouriteView(TestCase):
+    """
+    Test for articles app views
+    """
+
     password: str
     user: Any
     article: Any
@@ -468,3 +472,136 @@ class TestArticleFavouriteUnfavouriteView(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.article.favourite.count(), favourite + 1)
+
+
+class TestArticleHighlightView(TestCase):
+    """
+    Tests for highlighting text article
+    """
+
+    password: str
+    user: Any
+    article: Any
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.password = fake.password()
+        cls.user = User.objects.create_user(
+            username=fake.name(), email=fake.email(), password=cls.password
+        )
+        cls.article = Article.objects.create(
+            title=fake.texts(nb_texts=1),
+            description=fake.paragraph(nb_sentences=1),
+            body=fake.paragraph(),
+        )
+
+    @property
+    def bearer_token(self) -> dict:
+        login_url = reverse("login")
+        response = self.client.post(
+            login_url,
+            data={"email": self.user.email, "password": self.password},
+        )
+        token = json.loads(response.content).get("access")
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+
+    def test_highlight_text_in_an_article(self) -> None:
+        """
+        Test if a user can highlight an article
+        """
+        count = ArticleHighlight.objects.count()
+        response = self.client.post(
+            reverse("highlight"),
+            data={
+                "article": self.article.post_id,
+                "highlight_start": 1,
+                "highlight_end": 6,
+                "comment": "Great work",
+            },
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(ArticleHighlight.objects.count(), count + 1)
+
+    def test_highlight_an_article_from_the_end(self) -> None:
+        """
+        Test if a user can highlight an article from the end to the start
+        """
+        count = ArticleHighlight.objects.count()
+        response = self.client.post(
+            reverse("highlight"),
+            data={
+                "article": self.article.post_id,
+                "highlight_start": 8,
+                "highlight_end": 1,
+                "comment": "Great work",
+            },
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(ArticleHighlight.objects.count(), count + 1)
+
+    def test_delete_article_highlight(self) -> None:
+        """
+        Test if a user can delete their comments
+        """
+        data = ArticleHighlight.objects.create(
+            highlighter=self.user,
+            comment="Great work",
+            highlight_start=1,
+            highlight_end=10,
+            article=Article.objects.create(),
+        )
+
+        count = ArticleHighlight.objects.count()
+        response = self.client.delete(
+            reverse("highlight-detail", kwargs={"id": data.id}),
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(ArticleHighlight.objects.count(), count - 1)
+
+    def test_highlight_text_with_highlight_start_longer_than_article(
+        self,
+    ) -> None:
+        """
+        Test highlighting of an article with highlight_start longer than the article
+        """
+        response = self.client.post(
+            reverse("highlight"),
+            data={
+                "article": self.article.post_id,
+                "highlight_start": 1000,
+                "highlight_end": 200,
+                "comment": "Great work",
+            },
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            "This field should be less than the length of the article",
+            str(response.json()),
+        )
+
+    def test_highlight_text_with_highlight_end_longer_than_article(
+        self,
+    ) -> None:
+        """
+        Test highlighting of an article with highlight_end longer than the article
+        """
+        response = self.client.post(
+            reverse("highlight"),
+            data={
+                "article": self.article.post_id,
+                "highlight_start": 1,
+                "highlight_end": 20000,
+                "comment": "Great work",
+            },
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            "This field should be less than the length of the article",
+            str(response.json()),
+        )
