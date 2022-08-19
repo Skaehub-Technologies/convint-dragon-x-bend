@@ -8,7 +8,12 @@ from django.urls import reverse
 from faker import Faker
 from rest_framework import status
 
-from app.articles.models import Article, ArticleComment, ArticleHighlight
+from app.articles.models import (
+    Article,
+    ArticleBookmark,
+    ArticleComment,
+    ArticleHighlight,
+)
 
 from .mocks import sample_image
 
@@ -81,6 +86,14 @@ class TestArticleViews(TestCase):
         self.assertTrue(upload_resource.called)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Article.objects.count(), count + 1)
+
+    def test_get_all_articles(self) -> None:
+        response = self.client.get(
+            reverse("article-list"),
+            data=self.data,
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete_article(self) -> None:
         """
@@ -639,17 +652,22 @@ class TestArticleStatsView(TestCase):
         token = json.loads(response.content).get("access")
         return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
 
-    def test_get_bookmark_count(self) -> None:
+    def test_bookmark_count_statistics(self) -> None:
         """
         Test if user can get their bookmarks count
         """
-        response = self.client.get(
+        count = ArticleBookmark.objects.count()
+        response = self.client.post(
             reverse("bookmark"),
+            data={"article": self.article.post_id},
             **self.bearer_token,
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(ArticleBookmark.objects.count(), count + 1)
+        count = ArticleBookmark.objects.count()
         response = self.client.get(
             reverse("article-stats"),
             **self.bearer_token,
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(ArticleBookmark.objects.count(), count)

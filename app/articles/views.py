@@ -125,10 +125,6 @@ class ArticleStatsView(generics.ListCreateAPIView):
     renderer_classes = (JSONRenderer,)
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
-    def get_queryset(self) -> Any:
-        queryset = super().get_queryset()
-        return queryset.filter(author=self.request.user)
-
 
 class HighlightArticleListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
