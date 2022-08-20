@@ -58,7 +58,6 @@ class ArticleSerializer(serializers.ModelSerializer):
     )
     favourite_count = serializers.SerializerMethodField()
     unfavourite_count = serializers.SerializerMethodField()
-    views = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Article
@@ -76,7 +75,6 @@ class ArticleSerializer(serializers.ModelSerializer):
             "avg_rating",
             "favourite_count",
             "unfavourite_count",
-            "views",
             "created_at",
             "updated_at",
         )
@@ -86,7 +84,6 @@ class ArticleSerializer(serializers.ModelSerializer):
             "author",
             "tags",
             "reading_time",
-            "views",
         )
 
     def create(self, validated_data: Any) -> Any:
@@ -244,7 +241,6 @@ class ArticleStatSerializer(serializers.ModelSerializer):
     Serializer class for reading stats
     """
 
-    view_count = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
     favourite_count = serializers.SerializerMethodField()
     unfavourite_count = serializers.SerializerMethodField()
@@ -256,9 +252,6 @@ class ArticleStatSerializer(serializers.ModelSerializer):
 
     def get_bookmark_count(self, instance: Any) -> Any:
         return ArticleBookmark.objects.filter(article=instance).count()
-
-    def get_view_count(self, instance: Any) -> Any:
-        return instance.views
 
     def get_favourite_count(self, instance: Any) -> Any:
         return instance.favourite.count()
@@ -279,7 +272,6 @@ class ArticleStatSerializer(serializers.ModelSerializer):
         fields = [
             "slug",
             "title",
-            "view_count",
             "comment_count",
             "bookmark_count",
             "favourite_count",

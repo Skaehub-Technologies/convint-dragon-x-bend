@@ -87,13 +87,13 @@ class TestArticleViews(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Article.objects.count(), count + 1)
 
-    def test_get_all_articles(self) -> None:
+    def test_get_articles(self) -> None:
         response = self.client.get(
-            reverse("article-list"),
-            data=self.data,
-            **self.bearer_token,
+            reverse("article-list"), **self.bearer_token
         )
+        count = Article.objects.count()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("count"), count)  # type: ignore[attr-defined]
 
     def test_delete_article(self) -> None:
         """
@@ -666,7 +666,7 @@ class TestArticleStatsView(TestCase):
         self.assertEqual(ArticleBookmark.objects.count(), count + 1)
         count = ArticleBookmark.objects.count()
         response = self.client.get(
-            reverse("article-stats"),
+            reverse("statistics", kwargs={"slug": self.article.slug}),
             **self.bearer_token,
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
