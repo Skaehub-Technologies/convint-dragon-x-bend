@@ -6,28 +6,39 @@ from app.articles.views import (
     ArticleCommentView,
     ArticleDetailView,
     ArticleFavouriteView,
-    ArticleListCreateView,
-    ArticleRatingsListCreateView,
+    ArticleListView,
+    ArticleRatingsListView,
+    ArticleStatsView,
     ArticleUnFavouriteView,
-    HighlightArticleListCreateView,
+    HighlightArticleListView,
     HiglightDetailView,
 )
 
 urlpatterns = [
-    path("article/", ArticleListCreateView.as_view(), name="article-list"),
+    path("article/", ArticleListView.as_view(), name="article-list"),
     path(
         "article/<slug:slug>/",
         ArticleDetailView.as_view(),
         name="article-detail",
     ),
     path("bookmarks/", ArticleBookmarkView.as_view(), name="bookmark"),
+    path(
+        "articles/<str:article_id>/bookmarks/",
+        ArticleBookmarkView.as_view(),
+        name="article-bookmark",
+    ),
     path("comments/", ArticleCommentView.as_view(), name="comment"),
     path(
         "comments/<str:id>/",
         ArticleCommentDetailView.as_view(),
         name="comment-delete",
     ),
-    path("rate/", ArticleRatingsListCreateView.as_view(), name="rate"),
+    path("rate/", ArticleRatingsListView.as_view(), name="rate"),
+    path(
+        "articles/<str:article_id>/rate/",
+        ArticleRatingsListView.as_view(),
+        name="article-rates",
+    ),
     path(
         "articles/<slug:slug>/favourite/",
         ArticleFavouriteView.as_view(),
@@ -39,8 +50,13 @@ urlpatterns = [
         name="unfavourite",
     ),
     path(
+        "articles/<slug:slug>/stats/",
+        ArticleStatsView.as_view(),
+        name="statistics",
+    ),
+    path(
         "highlight/",
-        HighlightArticleListCreateView.as_view(),
+        HighlightArticleListView.as_view(),
         name="highlight",
     ),
     path(

@@ -304,3 +304,47 @@ class TextHighlightSerializer(serializers.ModelSerializer):
             validated_data["highlight_text"] = highlight_text
 
         return super().create(validated_data)
+
+
+class ArticleStatSerializer(serializers.ModelSerializer):
+    """
+    Serializer class for reading stats
+    """
+
+    comment_count = serializers.SerializerMethodField()
+    favourite_count = serializers.SerializerMethodField()
+    unfavourite_count = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+    bookmark_count = serializers.SerializerMethodField()
+
+    def get_comment_count(self, instance: Any) -> Any:
+        return ArticleComment.objects.filter(article=instance).count()
+
+    def get_bookmark_count(self, instance: Any) -> Any:
+        return ArticleBookmark.objects.filter(article=instance).count()
+
+    def get_favourite_count(self, instance: Any) -> Any:
+        return instance.favourite.count()
+
+    def get_unfavourite_count(self, instance: Any) -> Any:
+        return instance.unfavourite.count()
+
+    def get_average_rating(self, instance: Any) -> Any:
+        return (
+            ArticleRatings.objects.filter(article=instance).aggregate(
+                average_rating=Avg("rating")
+            )["average_rating"]
+            or 0
+        )
+
+    class Meta:
+        model = Article
+        fields = [
+            "slug",
+            "title",
+            "comment_count",
+            "bookmark_count",
+            "favourite_count",
+            "unfavourite_count",
+            "average_rating",
+        ]
