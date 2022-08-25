@@ -65,16 +65,16 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
 # White listing the localhost:3000 port
-CORS_ORIGIN_WHITELIST = "http://localhost:3000"
+CORS_ORIGIN_WHITELIST = ["http://localhost:3000"]
 ROOT_URLCONF = "speaksfer.urls"
 
 TEMPLATES = [
