@@ -8,7 +8,12 @@ from django.urls import reverse
 from faker import Faker
 from rest_framework import status
 
-from app.articles.models import Article, ArticleComment, ArticleHighlight
+from app.articles.models import (
+    Article,
+    ArticleBookmark,
+    ArticleComment,
+    ArticleHighlight,
+)
 
 from .mocks import sample_image
 
@@ -81,6 +86,14 @@ class TestArticleViews(TestCase):
         self.assertTrue(upload_resource.called)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Article.objects.count(), count + 1)
+
+    def test_get_articles(self) -> None:
+        response = self.client.get(
+            reverse("article-list"), **self.bearer_token
+        )
+        count = Article.objects.count()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("count"), count)  # type: ignore[attr-defined]
 
     def test_delete_article(self) -> None:
         """
@@ -605,3 +618,56 @@ class TestArticleHighlightView(TestCase):
             "This field should be less than the length of the article",
             str(response.json()),
         )
+
+
+class TestArticleStatsView(TestCase):
+    """
+    Tests for highlighting text article
+    """
+
+    password: str
+    user: Any
+    article: Any
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.password = fake.password()
+        cls.user = User.objects.create_user(
+            username=fake.name(), email=fake.email(), password=cls.password
+        )
+        cls.article = Article.objects.create(
+            title=fake.texts(nb_texts=1),
+            description=fake.paragraph(nb_sentences=1),
+            body=fake.paragraph(),
+        )
+
+    @property
+    def bearer_token(self) -> dict:
+        login_url = reverse("login")
+        response = self.client.post(
+            login_url,
+            data={"email": self.user.email, "password": self.password},
+        )
+        token = json.loads(response.content).get("access")
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+
+    def test_bookmark_count_statistics(self) -> None:
+        """
+        Test if user can get their bookmarks count
+        """
+        count = ArticleBookmark.objects.count()
+        response = self.client.post(
+            reverse("bookmark"),
+            data={"article": self.article.post_id},
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(ArticleBookmark.objects.count(), count + 1)
+        count = ArticleBookmark.objects.count()
+        response = self.client.get(
+            reverse("statistics", kwargs={"slug": self.article.slug}),
+            **self.bearer_token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(ArticleBookmark.objects.count(), count)

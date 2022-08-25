@@ -7,6 +7,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from app.articles.filters import ArticleFilter
 from app.articles.models import (
     Article,
     ArticleBookmark,
@@ -19,6 +20,7 @@ from app.articles.serializers import (
     ArticleBookmarkSerializer,
     ArticleCommentSerializer,
     ArticleSerializer,
+    ArticleStatSerializer,
     FavouriteSerializer,
     RatingSerializer,
     TextHighlightSerializer,
@@ -26,7 +28,7 @@ from app.articles.serializers import (
 )
 
 
-class ArticleListCreateView(generics.ListCreateAPIView):
+class ArticleListView(generics.ListCreateAPIView):
     serializer_class = ArticleSerializer
     queryset = Article.objects.all()
 
@@ -34,10 +36,16 @@ class ArticleListCreateView(generics.ListCreateAPIView):
         IsAuthenticated,
         IsOwnerOrReadOnly,
     ]
-
-    filterset_fields = ["title", "description", "body", "tags", "author"]
     filter_backends = [SearchFilter]
-    search_fields = ["title", "description", "body", "tags", "author"]
+    filterset_class = ArticleFilter
+    search_fields = [
+        "title",
+        "description",
+        "body",
+        "tags__name",
+        "author__username",
+        "post_id",
+    ]
 
 
 class ArticleDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -65,19 +73,24 @@ class ArticleBookmarkView(generics.ListCreateAPIView):
     ]
 
     def get_queryset(self) -> Any:
-        queryset = super().get_queryset()
-        return queryset.filter(user=self.request.user)
+        return (
+            super()
+            .get_queryset()
+            .filter(article_id=self.kwargs.get("article_id"))
+        )
 
 
 class ArticleCommentView(generics.ListCreateAPIView):
     serializer_class = ArticleCommentSerializer
     queryset = ArticleComment.objects.all()
     permission_classes = [IsAuthenticated]
+    renderer_classes = (JSONRenderer,)
 
 
 class ArticleCommentDetailView(generics.RetrieveDestroyAPIView):
     serializer_class = ArticleCommentSerializer
     queryset = ArticleComment.objects.all()
+    renderer_classes = (JSONRenderer,)
     permission_classes = [IsAuthenticated]
     lookup_field = "id"
 
@@ -92,7 +105,7 @@ class ArticleCommentDetailView(generics.RetrieveDestroyAPIView):
         )
 
 
-class ArticleRatingsListCreateView(generics.ListCreateAPIView):
+class ArticleRatingsListView(generics.ListCreateAPIView):
     permission_classes = [
         IsAuthenticated,
         IsOwnerOrReadOnly,
@@ -100,6 +113,15 @@ class ArticleRatingsListCreateView(generics.ListCreateAPIView):
 
     serializer_class = RatingSerializer
     queryset = ArticleRatings.objects.all()
+    renderer_classes = (JSONRenderer,)
+    lookup_field = "article_id"
+
+    def get_queryset(self) -> Any:
+        return (
+            super()
+            .get_queryset()
+            .filter(article_id=self.kwargs.get("article_id"))
+        )
 
 
 class ArticleFavouriteView(generics.UpdateAPIView):
@@ -118,16 +140,18 @@ class ArticleUnFavouriteView(generics.UpdateAPIView):
     renderer_classes = (JSONRenderer,)
 
 
-class HighlightArticleListCreateView(generics.ListCreateAPIView):
+class HighlightArticleListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = TextHighlightSerializer
     queryset = ArticleHighlight.objects.all()
+    renderer_classes = (JSONRenderer,)
 
 
 class HiglightDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = TextHighlightSerializer
     queryset = ArticleHighlight.objects.all()
+    renderer_classes = (JSONRenderer,)
     lookup_field = "id"
 
     def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -139,3 +163,14 @@ class HiglightDetailView(generics.RetrieveUpdateDestroyAPIView):
             {"message": "Highlight comment deleted successfully"},
             status=status.HTTP_204_NO_CONTENT,
         )
+
+
+class ArticleStatsView(generics.ListAPIView):
+    serializer_class = ArticleStatSerializer
+    queryset = Article.objects.all()
+    renderer_classes = (JSONRenderer,)
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+    lookup_field = "slug"
+
+    def get_queryset(self) -> Any:
+        return super().get_queryset().filter(slug=self.kwargs.get("slug"))
