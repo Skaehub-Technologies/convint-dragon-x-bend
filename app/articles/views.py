@@ -48,6 +48,21 @@ class ArticleListView(generics.ListCreateAPIView):
     ]
 
 
+class ArticleListAllView(generics.ListAPIView):
+    serializer_class = ArticleSerializer
+    queryset = Article.objects.all()
+    filter_backends = [SearchFilter]
+    filterset_class = ArticleFilter
+    search_fields = [
+        "title",
+        "description",
+        "body",
+        "tags__name",
+        "author__username",
+        "post_id",
+    ]
+
+
 class ArticleDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
