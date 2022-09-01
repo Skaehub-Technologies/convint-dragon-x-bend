@@ -6,6 +6,7 @@ from app.articles.views import (
     ArticleCommentView,
     ArticleDetailView,
     ArticleFavouriteView,
+    ArticleListAllView,
     ArticleListView,
     ArticleRatingsListView,
     ArticleStatsView,
@@ -16,6 +17,7 @@ from app.articles.views import (
 
 urlpatterns = [
     path("article/", ArticleListView.as_view(), name="article-list"),
+    path("articles/", ArticleListAllView.as_view(), name="all-articles"),
     path(
         "article/<slug:slug>/",
         ArticleDetailView.as_view(),
