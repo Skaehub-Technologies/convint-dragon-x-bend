@@ -77,6 +77,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+CORS_ALLOW_CREDENTIALS = True
 # White listing the localhost:3000 port
 CORS_ORIGIN_WHITELIST = ["http://localhost:3000"]
 ROOT_URLCONF = "speaksfer.urls"
