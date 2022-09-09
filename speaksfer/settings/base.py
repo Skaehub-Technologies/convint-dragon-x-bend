@@ -56,9 +56,9 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "rest_framework.authtoken",
+    "corsheaders",
     "cloudinary",
     "drf_yasg",
-    "corsheaders",
     # App imports
     "app.user",
     "app.articles",
@@ -76,17 +76,17 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.middleware.common.CommonMiddleware",
 ]
 
 # White listing the localhost:3000 port
-
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:3000",
     "https://speaksfer.netlify.app",
     "http://127.0.0.1:3000",
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
     "https://speaksfer.netlify.app",
