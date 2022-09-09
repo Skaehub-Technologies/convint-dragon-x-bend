@@ -34,7 +34,7 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = False
 
 ALLOWED_HOSTS: List[str] = [
-    ".herokuapp.com",
+    "https://speaksfer-bend.herokuapp.com/",
     "http://localhost:3000",
     "localhost",
     "127.0.0.1",
