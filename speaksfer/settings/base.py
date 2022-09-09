@@ -79,7 +79,19 @@ MIDDLEWARE = [
 
 CORS_ALLOW_CREDENTIALS = True
 # White listing the localhost:3000 port
-CORS_ORIGIN_WHITELIST = ["http://localhost:3000"]
+
+CORS_ORIGIN_WHITELIST = [
+    "http://localhost:3000",
+    "https://speaksfer.netlify.app",
+    "http://127.0.0.1:3000",
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "https://speaksfer.netlify.app",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
 ROOT_URLCONF = "speaksfer.urls"
 
 TEMPLATES = [
