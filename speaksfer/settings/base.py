@@ -64,8 +64,6 @@ INSTALLED_APPS = [
     "app.articles",
 ]
 
-AUTH_USER_MODEL = "user.User"
-
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -95,6 +93,8 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_HEADERS = default_headers + ("Access-Control-Allow-Origin",)
+
+AUTH_USER_MODEL = "user.User"
 
 ROOT_URLCONF = "speaksfer.urls"
 
