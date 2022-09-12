@@ -7,6 +7,7 @@ from rest_framework_simplejwt.views import (
 from app.user.views import (
     FollowersFollowingView,
     FollowProfile,
+    LogoutView,
     PasswordReset,
     ProfileDetailView,
     ProfileListView,
@@ -19,6 +20,7 @@ from app.user.views import (
 
 urlpatterns = [
     path("login/", TokenObtainPairView.as_view(), name="login"),
+    path("logout/", LogoutView.as_view(), name="logout"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("register/", UserRegister.as_view(), name="register"),
     path(

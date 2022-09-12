@@ -3,6 +3,7 @@ from typing import Any
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_str
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -65,7 +66,23 @@ class UserSerializer(serializers.ModelSerializer):
         )
         send_email("email_verification.html", email_data)
         return user
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
 
+    def validate(self, attrs):
+        self.token = attrs['refresh']
+        return attrs
+
+    def save(self, **kwargs):
+
+        try:
+            RefreshToken(self.token).blacklist()
+
+        except TokenError:
+
+         raise serializers.ValidationError(
+            "Invalid or expired token", code="invalid_token"
+        )
 
 class VerifyEmailSerializer(serializers.Serializer):
     encoded_pk = serializers.CharField()
