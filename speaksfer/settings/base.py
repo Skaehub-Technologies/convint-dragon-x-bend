@@ -35,7 +35,7 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = False
 
 ALLOWED_HOSTS: List[str] = [
-    "https://speaksfer-bend.herokuapp.com/",
+    "speaksfer-bend.herokuapp.com",
     "http://localhost:3000",
     "localhost",
     "127.0.0.1",
@@ -86,13 +86,13 @@ CORS_ORIGIN_WHITELIST = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-# CORS_ALLOWED_ORIGINS = [
-#     "https://speaksfer.netlify.app",
-#     "http://localhost:3000",
-#     "http://127.0.0.1:3000",
-# ]
+CORS_ALLOWED_ORIGINS = [
+    "https://speaksfer.netlify.app",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_HEADERS = default_headers + ("Access-Control-Allow-Origin",)
 
