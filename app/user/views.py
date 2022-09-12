@@ -14,11 +14,11 @@ from app.user.models import Profile, UserFollowing
 from app.user.permissions import IsUser
 from app.user.serializers import (
     FollowersFollowingSerializer,
+    LogoutSerializer,
     PasswordResetSerializer,
     ProfileSerializer,
     UserFollowingSerializer,
     UserSerializer,
-    LogoutSerializer,
     VerifyEmailSerializer,
     VerifyPasswordResetSerializer,
 )
@@ -54,19 +54,21 @@ class VerifyEmailView(GenericAPIView):
         serializer.save()
         return Response("Email verified", status=status.HTTP_200_OK)
 
+
 class LogoutView(GenericAPIView):
     serializer_class = LogoutSerializer
 
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request):
+    def post(self, request):  # type:ignore[no-untyped-def]
 
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
-        
+
+
 class UserView(generics.ListAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all()
